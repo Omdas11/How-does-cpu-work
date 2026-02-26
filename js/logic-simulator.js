@@ -298,9 +298,12 @@
     isAnimating = true;
     animationStartTime = performance.now();
 
-    if (!animationId) {
-      animate();
+    // Cancel any existing animation loop before starting a new one
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
     }
+    animate();
   }
 
   function toBin(n) {
@@ -327,7 +330,6 @@
 
     if (elapsed > totalDuration) {
       isAnimating = false;
-      animationId = null;
       return;
     }
 

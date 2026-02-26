@@ -423,7 +423,7 @@
     var maxDist = 40, minDist = 2;
     var pct = 1 - (dist - minDist) / (maxDist - minDist);
     pct = Math.max(0, Math.min(1, pct));
-    // Exponential mapping: 10^(pct * 9) gives 1× at 0% to 1,000,000,000× at 100%
+    // Exponential mapping: 10^(pct * 9) maps 0% → 1× up to 100% → 10^9 = 1,000,000,000×
     var zoomMultiplier = Math.pow(10, pct * 9);
     var zoomLabel;
     if (zoomMultiplier >= 1e9) {
