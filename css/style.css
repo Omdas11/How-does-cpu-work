@@ -185,6 +185,19 @@ nav { display: flex; gap: 28px; }
 .binary-row { font-family: 'Courier New', monospace; font-size: .85rem; display: flex; gap: 8px; }
 .bin-label { color: var(--mid-gray); min-width: 32px; }
 
+/* ---------- Educational Notes ---------- */
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+.note-card {
+  background: var(--off-white); border-radius: var(--radius); padding: 28px;
+  box-shadow: var(--shadow); border: 1px solid var(--light-gray);
+}
+.note-card-wide { grid-column: 1 / -1; }
+.note-card h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--dark); }
+.note-card h4 { font-size: .95rem; margin: 12px 0 6px; color: var(--accent-dark); }
+.note-card p { font-size: .92rem; color: #546E7A; margin-bottom: 8px; line-height: 1.65; }
+.note-card ul { padding-left: 20px; margin-bottom: 8px; }
+.note-card li { font-size: .9rem; color: #546E7A; margin-bottom: 6px; list-style: disc; line-height: 1.6; }
+
 /* ---------- About ---------- */
 .about-content { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
 .about-card {
