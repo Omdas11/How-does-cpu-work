@@ -42,7 +42,7 @@
     if (!canvas) return;
 
     ctx = canvas.getContext('2d');
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 6); // ~8K quality render
     resizeCanvas();
 
     drawCircuit();
@@ -187,23 +187,76 @@
   }
 
   function drawGate(x, y, label, color) {
-    var gw = 28, gh = 22;
-    // Rounded rect gate body
-    ctx.beginPath();
-    roundRect(ctx, x - gw / 2, y - gh / 2, gw, gh, 5);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.strokeStyle = shadeColor(color, -20);
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // hw=15, hh=13 keeps bounding box compatible with existing wire connection offsets (±12/±14)
+    var hw = 15, hh = 13;
+    ctx.save();
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
 
-    // Gate label
-    ctx.font = 'bold 8px monospace';
-    ctx.fillStyle = '#ffffff';
+    if (label === 'AND') {
+      // Rotated AND gate: flat top (2 inputs from above), U-shaped semicircle output at bottom
+      // Arc radius = hw; arc center y = y + hh - hw so arc bottom aligns with y + hh
+      var arcCy = y + hh - hw;
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.lineTo(x + hw, y - hh);         // flat top (input side)
+      ctx.lineTo(x + hw, arcCy);           // right edge down to arc start
+      ctx.arc(x, arcCy, hw, 0, Math.PI);  // U-arc pointing down (output side)
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else if (label === 'OR') {
+      // Rotated OR gate: concave top (inputs), curved sides tapering to a pointed bottom (output)
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.quadraticCurveTo(x, y - hh + hh * 0.4, x + hw, y - hh);     // concave top
+      ctx.quadraticCurveTo(x + hw, y + hh * 0.3,  x,      y + hh);     // right side to tip
+      ctx.quadraticCurveTo(x - hw, y + hh * 0.3,  x - hw, y - hh);     // left side from tip
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else if (label === 'XOR') {
+      // Rotated XOR gate: extra curved arc above OR body (like textbook double-curved input side)
+      var xorArcOffset = 6; // extra arc sits above the OR body to form the double-input symbol
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh - xorArcOffset);
+      ctx.quadraticCurveTo(x, y - hh - xorArcOffset + hh * 0.4, x + hw, y - hh - xorArcOffset);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      // Main OR body
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.quadraticCurveTo(x, y - hh + hh * 0.4, x + hw, y - hh);
+      ctx.quadraticCurveTo(x + hw, y + hh * 0.3,  x,      y + hh);
+      ctx.quadraticCurveTo(x - hw, y + hh * 0.3,  x - hw, y - hh);
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else {
+      // Fallback
+      ctx.beginPath();
+      roundRect(ctx, x - hw, y - hh, hw * 2, hh * 2, 4);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = shadeColor(color, -20);
+      ctx.stroke();
+    }
+
+    // Small label inside gate body
+    ctx.font = 'bold 7px sans-serif';
+    ctx.fillStyle = color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(label, x, y);
+    ctx.fillText(label, x, y - hh * 0.25);
     ctx.textBaseline = 'alphabetic';
+    ctx.restore();
   }
 
   function drawWire(x1, y1, x2, y2, active) {
