@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How Does a CPU Work? — 3D Interactive Exhibition</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Three.js & OrbitControls from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <!-- ====== HEADER ====== -->
+  <header id="site-header">
+    <div class="header-inner">
+      <div class="logo">⚙ CPU Explorer</div>
+      <nav>
+        <a href="#cpu-section" class="nav-link active" data-section="cpu-section">CPU Layers</a>
+        <a href="#transistor-section" class="nav-link" data-section="transistor-section">Transistors</a>
+        <a href="#logic-section" class="nav-link" data-section="logic-section">Logic &amp; Arithmetic</a>
+        <a href="#about-section" class="nav-link" data-section="about-section">About</a>
+      </nav>
+      <button id="menu-toggle" aria-label="Toggle menu">☰</button>
+    </div>
+  </header>
+
+  <!-- ====== HERO ====== -->
+  <section id="hero">
+    <h1>How Does a CPU Work?</h1>
+    <p>Explore the layers of a modern processor — from the chip package down to individual transistors</p>
+    <a href="#cpu-section" class="btn-primary">Start Exploring ↓</a>
+  </section>
+
+  <!-- ====== CPU 3D EXPLORER ====== -->
+  <section id="cpu-section" class="content-section">
+    <h2>CPU Layer Explorer</h2>
+    <p class="section-desc">Zoom in through each layer of the CPU: package → die → cores → transistors. Use scroll or pinch to zoom, drag to rotate.</p>
+    <div class="viewer-wrapper">
+      <canvas id="cpu-canvas"></canvas>
+      <!-- Zoom scale indicator -->
+      <div id="zoom-indicator">
+        <div class="zoom-label">Zoom Level</div>
+        <div class="zoom-bar-track">
+          <div class="zoom-bar-fill" id="zoom-bar-fill"></div>
+        </div>
+        <div class="zoom-value" id="zoom-value">1×</div>
+        <div class="zoom-level-name" id="zoom-level-name">Chip Package</div>
+      </div>
+      <!-- Layer legend -->
+      <div id="layer-legend">
+        <div class="legend-item" data-layer="package"><span class="dot" style="background:#607D8B"></span> Package</div>
+        <div class="legend-item" data-layer="die"><span class="dot" style="background:#78909C"></span> Die</div>
+        <div class="legend-item" data-layer="cores"><span class="dot" style="background:#0288D1"></span> Cores</div>
+        <div class="legend-item" data-layer="transistors"><span class="dot" style="background:#00C853"></span> Transistors</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TRANSISTOR MODELS ====== -->
+  <section id="transistor-section" class="content-section">
+    <h2>Transistor Models</h2>
+    <p class="section-desc">Explore 3D models of the two dominant transistor architectures in modern CPUs.</p>
+    <div class="transistor-grid">
+      <div class="transistor-card">
+        <h3>MOSFET</h3>
+        <p>Metal-Oxide-Semiconductor Field-Effect Transistor — the classic planar design used for decades.</p>
+        <div class="viewer-wrapper small-viewer">
+          <canvas id="mosfet-canvas"></canvas>
+        </div>
+        <div class="transistor-labels" id="mosfet-labels"></div>
+      </div>
+      <div class="transistor-card">
+        <h3>FinFET</h3>
+        <p>Fin Field-Effect Transistor — a 3D tri-gate design that reduces leakage and improves performance.</p>
+        <div class="viewer-wrapper small-viewer">
+          <canvas id="finfet-canvas"></canvas>
+        </div>
+        <div class="transistor-labels" id="finfet-labels"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== LOGIC GATE ARITHMETIC ====== -->
+  <section id="logic-section" class="content-section">
+    <h2>Logic Gates &amp; Arithmetic</h2>
+    <p class="section-desc">See how CPUs perform calculations using logic gates. Enter decimal numbers and watch data flow through the circuit.</p>
+
+    <div class="logic-controls">
+      <div class="input-group">
+        <label for="inputA">Number A</label>
+        <input type="number" id="inputA" value="5" min="0" max="255">
+      </div>
+      <div class="input-group">
+        <label for="operation">Operation</label>
+        <select id="operation">
+          <option value="add">Addition (+)</option>
+          <option value="sub">Subtraction (−)</option>
+          <option value="and">Bitwise AND (&amp;)</option>
+          <option value="or">Bitwise OR (|)</option>
+          <option value="xor">Bitwise XOR (^)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="inputB">Number B</label>
+        <input type="number" id="inputB" value="3" min="0" max="255">
+      </div>
+      <button id="calculate-btn" class="btn-primary">Calculate</button>
+    </div>
+
+    <div class="speed-control">
+      <label for="speed-slider">Animation Speed</label>
+      <input type="range" id="speed-slider" min="1" max="10" value="5">
+      <span id="speed-label">5</span>
+    </div>
+
+    <div class="viewer-wrapper logic-viewer">
+      <canvas id="logic-canvas"></canvas>
+      <div id="result-display">
+        <span id="result-text">Result: —</span>
+        <div id="binary-display">
+          <div class="binary-row"><span class="bin-label">A:</span> <span id="binA">00000000</span></div>
+          <div class="binary-row"><span class="bin-label">B:</span> <span id="binB">00000000</span></div>
+          <div class="binary-row"><span class="bin-label">Out:</span> <span id="binOut">00000000</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== ABOUT ====== -->
+  <section id="about-section" class="content-section">
+    <h2>About This Exhibition</h2>
+    <div class="about-content">
+      <div class="about-card">
+        <h3>🔬 What You'll Learn</h3>
+        <p>This interactive exhibition takes you on a journey from the visible chip package all the way down to the nanoscale transistors that make computation possible. You'll see how logic gates combine to perform arithmetic and how data flows through a CPU.</p>
+      </div>
+      <div class="about-card">
+        <h3>🎮 How to Interact</h3>
+        <ul>
+          <li><strong>Rotate:</strong> Click &amp; drag (or touch &amp; drag)</li>
+          <li><strong>Zoom:</strong> Scroll wheel (or pinch)</li>
+          <li><strong>Pan:</strong> Right-click &amp; drag (or two-finger drag)</li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>📐 Technology</h3>
+        <p>Built with Three.js for 3D rendering, vanilla JavaScript for logic simulation, and CSS for the white-themed exhibition aesthetic.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer id="site-footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h4>CPU Explorer</h4>
+        <p>An interactive 3D exhibition explaining how modern processors work — from chip to transistor.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sections</h4>
+        <ul>
+          <li><a href="#cpu-section">CPU Layers</a></li>
+          <li><a href="#transistor-section">Transistors</a></li>
+          <li><a href="#logic-section">Logic &amp; Arithmetic</a></li>
+          <li><a href="#about-section">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://en.wikipedia.org/wiki/Central_processing_unit" target="_blank" rel="noopener noreferrer">CPU — Wikipedia</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/MOSFET" target="_blank" rel="noopener noreferrer">MOSFET — Wikipedia</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/FinFET" target="_blank" rel="noopener noreferrer">FinFET — Wikipedia</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 CPU Explorer Exhibition. Educational purposes only.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/cpu-explorer.js"></script>
+  <script src="js/transistor-viewer.js"></script>
+  <script src="js/logic-simulator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
