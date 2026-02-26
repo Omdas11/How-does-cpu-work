@@ -19,6 +19,7 @@
         <a href="#cpu-section" class="nav-link active" data-section="cpu-section">CPU Layers</a>
         <a href="#transistor-section" class="nav-link" data-section="transistor-section">Transistors</a>
         <a href="#logic-section" class="nav-link" data-section="logic-section">Logic &amp; Arithmetic</a>
+        <a href="#notes-section" class="nav-link" data-section="notes-section">Notes</a>
         <a href="#about-section" class="nav-link" data-section="about-section">About</a>
       </nav>
       <button id="menu-toggle" aria-label="Toggle menu">☰</button>
@@ -127,6 +128,94 @@
     </div>
   </section>
 
+  <!-- ====== EDUCATIONAL NOTES ====== -->
+  <section id="notes-section" class="content-section">
+    <h2>CPU Architecture — Educational Notes</h2>
+    <p class="section-desc">Comprehensive reference covering every major component of a modern processor, from chip-level architecture down to individual transistors.</p>
+
+    <div class="notes-grid">
+
+      <div class="note-card">
+        <h3>🖥️ CPU (Central Processing Unit)</h3>
+        <p>The CPU is the "brain" of a computer. It fetches instructions from memory, decodes them, and executes them in sequence. Modern CPUs contain billions of transistors fabricated on a silicon die, packaged inside a chip that connects to the motherboard. The CPU coordinates all operations — arithmetic, logic, data movement, and control — by cycling through <strong>Fetch → Decode → Execute → Write-back</strong> stages millions (or billions) of times per second.</p>
+        <p><strong>Key metrics:</strong> Clock speed (GHz), instruction per cycle (IPC), core count, cache size, process node (e.g. 5 nm).</p>
+      </div>
+
+      <div class="note-card">
+        <h3>🧩 Cores</h3>
+        <p>A <strong>core</strong> is an independent processing unit within the CPU. Each core can fetch, decode, and execute its own stream of instructions. Multi-core CPUs (2, 4, 8, 16, or more cores) allow true parallelism — running multiple threads simultaneously. Modern designs use <strong>heterogeneous cores</strong>: high-performance cores (P-cores) for heavy workloads and efficiency cores (E-cores) for background tasks, optimising both speed and power consumption.</p>
+        <p><strong>Example:</strong> An 8-core CPU can run 8 independent instruction streams in parallel.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>🎛️ Control Unit (CU)</h3>
+        <p>The <strong>Control Unit</strong> is the "conductor" of the CPU. It reads instructions from memory, decodes the opcode to determine what operation to perform, and generates control signals that orchestrate the ALU, registers, and data buses. It manages the <strong>instruction pipeline</strong>, handles branch prediction, and coordinates with the clock to ensure every component acts at the right time. Without the CU, the CPU would not know which operation to perform next.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>➕ ALU (Arithmetic Logic Unit)</h3>
+        <p>The <strong>ALU</strong> performs all mathematical and logical operations: addition, subtraction, multiplication, division, bitwise AND, OR, XOR, NOT, and comparison. It takes two input operands and produces a result plus status flags (zero, carry, overflow, sign). The ALU is built from combinational logic gates — a full adder chain for arithmetic, and dedicated gates for each logical operation. Modern CPUs have multiple ALUs per core for superscalar execution.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>📋 Registers</h3>
+        <p><strong>Registers</strong> are the fastest storage in the CPU — tiny memory cells built directly into the core. They hold the data the ALU is currently working on, instruction pointers, stack pointers, and status flags. Types include: <strong>General-purpose registers</strong> (e.g. RAX, RBX on x86), <strong>Program Counter (PC)</strong> — address of next instruction, <strong>Stack Pointer (SP)</strong>, <strong>Flags/Status register</strong>, and <strong>Floating-Point registers</strong> (for decimal math). Register access takes just 1 clock cycle — far faster than cache or RAM.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>💾 Cache</h3>
+        <p><strong>Cache</strong> is high-speed SRAM memory sitting between registers and main RAM, designed to reduce the latency of memory access. It operates in a hierarchy:</p>
+        <ul>
+          <li><strong>L1 Cache</strong> — Smallest (32–128 KB per core), fastest (~1 ns). Split into instruction cache (L1i) and data cache (L1d).</li>
+          <li><strong>L2 Cache</strong> — Medium (256 KB – 1 MB per core), slightly slower (~3–5 ns).</li>
+          <li><strong>L3 Cache</strong> — Largest (8–64 MB shared), slowest cache level (~10–20 ns). Shared among all cores.</li>
+        </ul>
+        <p>Cache uses spatial and temporal locality to predict which data will be needed next.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>🚌 Buses</h3>
+        <p><strong>Buses</strong> are the communication highways inside the CPU and between the CPU and other components. Three main types:</p>
+        <ul>
+          <li><strong>Data Bus</strong> — Carries actual data between CPU, memory, and I/O (width = 64 bits on modern CPUs).</li>
+          <li><strong>Address Bus</strong> — Carries memory addresses, determining where data is read from or written to.</li>
+          <li><strong>Control Bus</strong> — Carries control signals (read/write, interrupt, clock) to coordinate operations.</li>
+        </ul>
+        <p>Inside the chip, a <strong>ring bus</strong> or <strong>mesh interconnect</strong> connects cores to L3 cache and memory controllers at very high bandwidth.</p>
+      </div>
+
+      <div class="note-card">
+        <h3>⏱️ Clock</h3>
+        <p>The <strong>clock</strong> generates a periodic square-wave signal that synchronises every operation inside the CPU. Each "tick" (rising edge) triggers the next step in the pipeline. Clock speed is measured in <strong>GHz</strong> (billions of cycles per second). A 5 GHz clock means 5 billion ticks per second, with each cycle lasting just 0.2 nanoseconds. <strong>Turbo boost</strong> dynamically increases clock speed for short bursts; <strong>clock gating</strong> disables the clock to idle circuits, saving power.</p>
+      </div>
+
+      <div class="note-card note-card-wide">
+        <h3>🔬 MOSFET (Metal-Oxide-Semiconductor Field-Effect Transistor)</h3>
+        <p>The <strong>MOSFET</strong> is the fundamental building block of all modern digital circuits. It acts as a voltage-controlled switch: applying a voltage to the <strong>gate</strong> creates an electric field across the <strong>oxide</strong> insulator, which attracts charge carriers to form a conductive <strong>channel</strong> between the <strong>source</strong> and <strong>drain</strong>.</p>
+        <h4>Types of MOSFETs</h4>
+        <ul>
+          <li><strong>NMOS (n-channel)</strong> — Channel formed by electrons. Turns ON when gate voltage is HIGH. Faster switching, used for pull-down networks.</li>
+          <li><strong>PMOS (p-channel)</strong> — Channel formed by holes. Turns ON when gate voltage is LOW. Used for pull-up networks.</li>
+          <li><strong>CMOS (Complementary MOS)</strong> — Pairs of NMOS + PMOS transistors working together. Nearly zero static power consumption. This is the technology used in virtually all modern CPUs.</li>
+        </ul>
+        <p><strong>Key parameters:</strong> Threshold voltage (Vt), gate length (determines process node), on/off current ratio, gate capacitance.</p>
+      </div>
+
+      <div class="note-card note-card-wide">
+        <h3>🏗️ FinFET (Fin Field-Effect Transistor)</h3>
+        <p>As transistors shrank below ~22 nm, traditional planar MOSFETs suffered from severe <strong>short-channel effects</strong> — the gate could no longer control the channel, causing leakage current. The <strong>FinFET</strong> solves this by raising the channel vertically as a thin "fin" of silicon, and wrapping the gate around it on three sides (tri-gate). This dramatically improves electrostatic control.</p>
+        <h4>Types & Variants</h4>
+        <ul>
+          <li><strong>Bulk FinFET</strong> — Fins are etched from the bulk silicon substrate. Used by Intel (from 22 nm) and TSMC/Samsung (from 16/14 nm).</li>
+          <li><strong>SOI FinFET</strong> — Fins built on a Silicon-on-Insulator wafer, reducing parasitic capacitance and leakage further.</li>
+          <li><strong>GAA FET (Gate-All-Around)</strong> — The next evolution: the channel is a horizontal nanosheet or nanowire fully surrounded by the gate on all four sides. Used at 3 nm and below (Samsung, TSMC).</li>
+        </ul>
+        <p><strong>Advantages over planar MOSFET:</strong> Better leakage control, higher drive current, lower operating voltage, improved performance-per-watt. FinFETs enabled the continuation of Moore's Law below 22 nm.</p>
+      </div>
+
+    </div>
+  </section>
+
   <!-- ====== ABOUT ====== -->
   <section id="about-section" class="content-section">
     <h2>About This Exhibition</h2>
@@ -163,6 +252,7 @@
           <li><a href="#cpu-section">CPU Layers</a></li>
           <li><a href="#transistor-section">Transistors</a></li>
           <li><a href="#logic-section">Logic &amp; Arithmetic</a></li>
+          <li><a href="#notes-section">Notes</a></li>
           <li><a href="#about-section">About</a></li>
         </ul>
       </div>

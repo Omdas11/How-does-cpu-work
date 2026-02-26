@@ -1,222 +1,320 @@
 /* ==========================================================
-   Logic Simulator — Visual arithmetic with logic gates
+   Logic Simulator — 2D visual arithmetic with logic gates
+   Electron flow shown as water-like streams (not spheres)
    ========================================================== */
 
 (function () {
   'use strict';
 
-  var scene, camera, renderer, controls;
+  var canvas, ctx;
   var animationId;
-  var flowParticles = [];
-  var gateObjects = [];
-  var wireObjects = [];
-  var animationSpeed = 5;      // 1-10
+  var animationSpeed = 5;
   var isAnimating = false;
   var animationTime = 0;
+  var animationStartTime = 0;
+  var currentA = 5, currentB = 3, currentResult = 0, currentOp = 'add';
+  var dpr = 1;
 
   /* ---------- Colour palette ---------- */
   var C = {
-    wire:     0x90A4AE,
-    wireOn:   0x00E676,
-    wireOff:  0x455A64,
-    gateBody: 0x37474F,
-    gateAnd:  0x1E88E5,
-    gateOr:   0x7B1FA2,
-    gateXor:  0xF57C00,
-    gateNot:  0xE53935,
-    glow:     0x00E676,
-    inputOn:  0x00E676,
-    inputOff: 0x455A64,
-    output:   0xFFD54F,
-    bg:       0xf5f7fa
+    bg:         '#f5f7fa',
+    wire:       '#B0BEC5',
+    wireActive: '#0288D1',
+    flowHigh:   '#00E676',
+    flowLow:    '#90A4AE',
+    gateAnd:    '#1E88E5',
+    gateOr:     '#7B1FA2',
+    gateXor:    '#F57C00',
+    inputA:     '#0288D1',
+    inputB:     '#7B1FA2',
+    output:     '#00C853',
+    carry:      '#F57C00',
+    text:       '#263238',
+    labelBg:    '#ffffff',
+    gridLine:   '#e8ecf1'
   };
 
   /* ================================================================
      PUBLIC INIT
      ================================================================ */
   window.initLogicSimulator = function () {
-    var canvas = document.getElementById('logic-canvas');
+    canvas = document.getElementById('logic-canvas');
     if (!canvas) return;
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(C.bg);
+    ctx = canvas.getContext('2d');
+    dpr = Math.min(window.devicePixelRatio || 1, 6); // ~8K quality render
+    resizeCanvas();
 
-    camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 200);
-    camera.position.set(0, 18, 22);
-    camera.lookAt(0, 0, 0);
+    drawCircuit();
 
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.target.set(0, 2, 0);
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    var dir = new THREE.DirectionalLight(0xffffff, 0.7);
-    dir.position.set(10, 20, 10);
-    scene.add(dir);
-
-    buildStaticCircuit();
-    animate();
-
-    // Controls
     document.getElementById('calculate-btn').addEventListener('click', runCalculation);
     document.getElementById('speed-slider').addEventListener('input', function (e) {
       animationSpeed = parseInt(e.target.value, 10);
       document.getElementById('speed-label').textContent = animationSpeed;
     });
 
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', function () {
+      resizeCanvas();
+      drawCircuit();
+    });
   };
 
+  function resizeCanvas() {
+    var parent = canvas.parentElement;
+    if (!parent) return;
+    var w = parent.clientWidth;
+    var h = parent.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
   /* ================================================================
-     BUILD 8-BIT ADDER / LOGIC CIRCUIT (static layout)
+     DRAW STATIC 2D CIRCUIT
      ================================================================ */
-  function buildStaticCircuit() {
-    gateObjects = [];
-    wireObjects = [];
+  function drawCircuit() {
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
 
-    // Ground plane
-    var ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(40, 25),
-      new THREE.MeshStandardMaterial({ color: 0xeceff1, side: THREE.DoubleSide })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.01;
-    scene.add(ground);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = C.bg;
+    ctx.fillRect(0, 0, w, h);
 
-    // Build 8 full-adder slices laid out horizontally
+    // Layout constants
+    var margin = 40;
+    var bitW = (w - margin * 2) / 8;
+    var topY = 50;
+    var gateY1 = topY + 80;
+    var gateY2 = gateY1 + 70;
+    var gateY3 = gateY2 + 70;
+    var outY = gateY3 + 60;
+    var carryY = gateY2 + 30;
+
+    // Title labels
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = C.inputA;
+    ctx.fillText('A₇  ←  Input Bus A  →  A₀', w / 2, topY - 20);
+    ctx.fillStyle = C.inputB;
+    ctx.fillText('B₇  ←  Input Bus B  →  B₀', w / 2, topY);
+    ctx.fillStyle = C.output;
+    ctx.fillText('Sum₇  ←  Output Bus  →  Sum₀', w / 2, outY + 30);
+
+    var bitsA = toBin(currentA).split('').map(Number);
+    var bitsB = toBin(currentB).split('').map(Number);
+    var bitsR = toBin(currentResult).split('').map(Number);
+
     for (var bit = 0; bit < 8; bit++) {
-      var x = (bit - 3.5) * 4.2;
-      buildFullAdderSlice(x, 0, bit);
+      var cx = margin + bitW * bit + bitW / 2;
+      var aVal = bitsA[bit];
+      var bVal = bitsB[bit];
+      var rVal = bitsR[bit];
+
+      // Input dots
+      drawInputDot(cx - 10, topY + 16, aVal, C.inputA);
+      drawInputDot(cx + 10, topY + 16, bVal, C.inputB);
+
+      // Wires from inputs to XOR gate
+      drawWire(cx - 10, topY + 22, cx - 6, gateY1 - 12, false);
+      drawWire(cx + 10, topY + 22, cx + 6, gateY1 - 12, false);
+
+      // XOR gate (first)
+      drawGate(cx, gateY1, 'XOR', C.gateXor);
+
+      // Wire from XOR1 to XOR2
+      drawWire(cx, gateY1 + 14, cx, gateY2 - 12, false);
+
+      // AND gate (for carry)
+      drawGate(cx + bitW * 0.3, gateY2, 'AND', C.gateAnd);
+
+      // XOR gate 2 (with carry-in)
+      drawGate(cx, gateY2, 'XOR', C.gateXor);
+
+      // OR gate (carry out)
+      drawGate(cx + bitW * 0.3, gateY3, 'OR', C.gateOr);
+
+      // Wire from XOR2 to output
+      drawWire(cx, gateY2 + 14, cx, outY - 6, false);
+
+      // Output dot
+      drawOutputDot(cx, outY, rVal);
+
+      // Carry chain wire (horizontal)
+      if (bit < 7) {
+        drawWire(cx + bitW * 0.3, gateY3 + 14, cx + bitW + bitW * 0.3, gateY2 - 12, false);
+      }
+
+      // Bit label
+      ctx.font = '10px sans-serif';
+      ctx.fillStyle = '#546E7A';
+      ctx.textAlign = 'center';
+      ctx.fillText('Bit ' + (7 - bit), cx, outY + 50);
+    }
+  }
+
+  function drawInputDot(x, y, val, baseColor) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = val ? baseColor : '#CFD8DC';
+    ctx.fill();
+    ctx.strokeStyle = baseColor;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.font = 'bold 8px monospace';
+    ctx.fillStyle = val ? '#fff' : '#78909C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(val, x, y);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function drawOutputDot(x, y, val) {
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = val ? C.output : '#CFD8DC';
+    ctx.fill();
+    ctx.strokeStyle = C.output;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.font = 'bold 9px monospace';
+    ctx.fillStyle = val ? '#fff' : '#78909C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(val, x, y);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function drawGate(x, y, label, color) {
+    // hw=15, hh=13 keeps bounding box compatible with existing wire connection offsets (±12/±14)
+    var hw = 15, hh = 13;
+    ctx.save();
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+
+    if (label === 'AND') {
+      // Rotated AND gate: flat top (2 inputs from above), U-shaped semicircle output at bottom
+      // Arc radius = hw; arc center y = y + hh - hw so arc bottom aligns with y + hh
+      var arcCy = y + hh - hw;
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.lineTo(x + hw, y - hh);         // flat top (input side)
+      ctx.lineTo(x + hw, arcCy);           // right edge down to arc start
+      ctx.arc(x, arcCy, hw, 0, Math.PI);  // U-arc pointing down (output side)
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else if (label === 'OR') {
+      // Rotated OR gate: concave top (inputs), curved sides tapering to a pointed bottom (output)
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.quadraticCurveTo(x, y - hh + hh * 0.4, x + hw, y - hh);     // concave top
+      ctx.quadraticCurveTo(x + hw, y + hh * 0.3,  x,      y + hh);     // right side to tip
+      ctx.quadraticCurveTo(x - hw, y + hh * 0.3,  x - hw, y - hh);     // left side from tip
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else if (label === 'XOR') {
+      // Rotated XOR gate: extra curved arc above OR body (like textbook double-curved input side)
+      var xorArcOffset = 6; // extra arc sits above the OR body to form the double-input symbol
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh - xorArcOffset);
+      ctx.quadraticCurveTo(x, y - hh - xorArcOffset + hh * 0.4, x + hw, y - hh - xorArcOffset);
+      ctx.strokeStyle = color;
+      ctx.stroke();
+      // Main OR body
+      ctx.beginPath();
+      ctx.moveTo(x - hw, y - hh);
+      ctx.quadraticCurveTo(x, y - hh + hh * 0.4, x + hw, y - hh);
+      ctx.quadraticCurveTo(x + hw, y + hh * 0.3,  x,      y + hh);
+      ctx.quadraticCurveTo(x - hw, y + hh * 0.3,  x - hw, y - hh);
+      ctx.closePath();
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    } else {
+      // Fallback
+      ctx.beginPath();
+      roundRect(ctx, x - hw, y - hh, hw * 2, hh * 2, 4);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = shadeColor(color, -20);
+      ctx.stroke();
     }
 
-    // Input labels (A and B buses)
-    addLabel(scene, 'A₇…A₀  Input Bus', 0, 0.4, -7, '#0288D1', 3);
-    addLabel(scene, 'B₇…B₀  Input Bus', 0, 0.4, -4.5, '#7B1FA2', 3);
-    addLabel(scene, 'Sum₇…Sum₀  Output', 0, 0.4, 7, '#00C853', 3);
-    addLabel(scene, 'Carry Chain →', 12, 0.4, 2, '#F57C00', 2);
-  }
-
-  /* ---------- Full Adder Slice ---------- */
-  function buildFullAdderSlice(x, y, bitIndex) {
-    // XOR gate 1 (A XOR B)
-    var xor1 = createGate(x, y + 0.5, -2, 'XOR', C.gateXor);
-    // AND gate 1 (A AND B)
-    var and1 = createGate(x + 1.2, y + 0.5, 0, 'AND', C.gateAnd);
-    // XOR gate 2 (xor1 XOR Cin)
-    var xor2 = createGate(x, y + 0.5, 2.5, 'XOR', C.gateXor);
-    // AND gate 2 (xor1 AND Cin)
-    var and2 = createGate(x + 1.2, y + 0.5, 2.5, 'AND', C.gateAnd);
-    // OR gate (and1 OR and2) = Cout
-    var or1 = createGate(x + 1.2, y + 0.5, 4.5, 'OR', C.gateOr);
-
-    // Input indicators
-    var inA = createInputNode(x - 0.5, y + 0.3, -5.5);
-    var inB = createInputNode(x + 0.5, y + 0.3, -5.5);
-
-    // Output indicator
-    var outS = createOutputNode(x, y + 0.3, 6);
-
-    // Wires — A,B to XOR1 & AND1
-    createWire([x - 0.5, y + 0.2, -5.5], [x - 0.5, y + 0.2, -2], bitIndex);
-    createWire([x + 0.5, y + 0.2, -5.5], [x + 0.5, y + 0.2, -2], bitIndex);
-    createWire([x - 0.5, y + 0.2, -2], [x + 0.8, y + 0.2, 0], bitIndex);
-    createWire([x + 0.5, y + 0.2, -2], [x + 1.6, y + 0.2, 0], bitIndex);
-
-    // XOR1 to XOR2
-    createWire([x, y + 0.2, -1.2], [x, y + 0.2, 2.5], bitIndex);
-    // XOR2 output -> Sum
-    createWire([x, y + 0.2, 3.3], [x, y + 0.2, 6], bitIndex);
-
-    // AND1 -> OR, AND2 -> OR
-    createWire([x + 1.2, y + 0.2, 0.8], [x + 1.2, y + 0.2, 4.5], bitIndex);
-    createWire([x + 1.2, y + 0.2, 3.3], [x + 1.5, y + 0.2, 4.5], bitIndex);
-
-    // Bit label
-    addLabel(scene, 'Bit ' + bitIndex, x, 2.0, -6.5, '#546E7A', 1);
-
-    gateObjects.push(
-      { mesh: xor1, type: 'xor', bit: bitIndex },
-      { mesh: and1, type: 'and', bit: bitIndex },
-      { mesh: xor2, type: 'xor', bit: bitIndex },
-      { mesh: and2, type: 'and', bit: bitIndex },
-      { mesh: or1,  type: 'or',  bit: bitIndex }
-    );
-  }
-
-  /* ---------- Gate Mesh ---------- */
-  function createGate(x, y, z, label, color) {
-    var group = new THREE.Group();
-
-    // Body
-    var geo = new THREE.BoxGeometry(1.5, 0.7, 0.8);
-    var mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.2 });
-    var body = new THREE.Mesh(geo, mat);
-    group.add(body);
-
-    // Glow outline (emissive, starts off)
-    var edgeGeo = new THREE.EdgesGeometry(geo);
-    var edgeMat = new THREE.LineBasicMaterial({ color: C.glow, transparent: true, opacity: 0 });
-    var edges = new THREE.LineSegments(edgeGeo, edgeMat);
-    group.add(edges);
-    group.userData.edgeMat = edgeMat;
-
-    // Label
-    var lc = document.createElement('canvas');
-    lc.width = 128; lc.height = 48;
-    var ctx = lc.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px monospace';
+    // Small label inside gate body
+    ctx.font = 'bold 7px sans-serif';
+    ctx.fillStyle = color;
     ctx.textAlign = 'center';
-    ctx.fillText(label, 64, 34);
-    var tex = new THREE.CanvasTexture(lc);
-    var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
-    sprite.scale.set(1.2, 0.45, 1);
-    sprite.position.y = 0.6;
-    group.add(sprite);
-
-    group.position.set(x, y, z);
-    scene.add(group);
-    return group;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, x, y - hh * 0.25);
+    ctx.textBaseline = 'alphabetic';
+    ctx.restore();
   }
 
-  /* ---------- Input / Output Nodes ---------- */
-  function createInputNode(x, y, z) {
-    var mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.25, 16, 16),
-      new THREE.MeshStandardMaterial({ color: C.inputOff, emissive: 0x000000, roughness: 0.3 })
-    );
-    mesh.position.set(x, y, z);
-    scene.add(mesh);
-    return mesh;
+  function drawWire(x1, y1, x2, y2, active) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = active ? C.wireActive : C.wire;
+    ctx.lineWidth = active ? 2 : 1;
+    ctx.globalAlpha = active ? 1 : 0.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
 
-  function createOutputNode(x, y, z) {
-    var mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.3, 16, 16),
-      new THREE.MeshStandardMaterial({ color: C.output, emissive: 0x000000, roughness: 0.3 })
-    );
-    mesh.position.set(x, y, z);
-    scene.add(mesh);
-    return mesh;
-  }
+  /* ================================================================
+     WATER-LIKE FLOW ANIMATION
+     ================================================================ */
+  function drawFlowOnWire(x1, y1, x2, y2, progress, color) {
+    // Draw a stream of "water" flowing from (x1,y1) to (x2,y2)
+    // progress: 0 to 1 means how far the head of the stream has traveled
+    var headPct = Math.min(progress, 1);
+    var tailPct = Math.max(progress - 0.4, 0);
 
-  /* ---------- Wires ---------- */
-  function createWire(from, to, bitIndex) {
-    var points = [
-      new THREE.Vector3(from[0], from[1], from[2]),
-      new THREE.Vector3(to[0], to[1], to[2])
-    ];
-    var geo = new THREE.BufferGeometry().setFromPoints(points);
-    var mat = new THREE.LineBasicMaterial({ color: C.wire, transparent: true, opacity: 0.4 });
-    var line = new THREE.Line(geo, mat);
-    scene.add(line);
-    wireObjects.push({ line: line, mat: mat, from: from, to: to, bit: bitIndex, active: false });
-    return line;
+    var hx = x1 + (x2 - x1) * headPct;
+    var hy = y1 + (y2 - y1) * headPct;
+    var tx = x1 + (x2 - x1) * tailPct;
+    var ty = y1 + (y2 - y1) * tailPct;
+
+    // Gradient from tail (transparent) to head (solid)
+    var grad = ctx.createLinearGradient(tx, ty, hx, hy);
+    grad.addColorStop(0, colorWithAlpha(color, 0));
+    grad.addColorStop(0.3, colorWithAlpha(color, 0.5));
+    grad.addColorStop(1, colorWithAlpha(color, 0.9));
+
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(hx, hy);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Ripple dots along the stream (water-like effect)
+    var numDots = 4;
+    for (var i = 0; i < numDots; i++) {
+      var dotPct = tailPct + (headPct - tailPct) * (i / numDots);
+      var dx = x1 + (x2 - x1) * dotPct;
+      var dy = y1 + (y2 - y1) * dotPct;
+      var wobble = Math.sin((progress * 10 + i * 2)) * 2;
+      // perpendicular offset
+      var len = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+      var nx = -(y2 - y1) / (len || 1);
+      var ny = (x2 - x1) / (len || 1);
+      ctx.beginPath();
+      ctx.arc(dx + nx * wobble, dy + ny * wobble, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = colorWithAlpha(color, 0.6);
+      ctx.fill();
+    }
   }
 
   /* ================================================================
@@ -227,7 +325,6 @@
     var b = parseInt(document.getElementById('inputB').value, 10) || 0;
     var op = document.getElementById('operation').value;
 
-    // Clamp to 8-bit unsigned
     a = Math.max(0, Math.min(255, a));
     b = Math.max(0, Math.min(255, b));
 
@@ -241,154 +338,29 @@
       default:    result = 0;
     }
 
-    // Update display
+    currentA = a;
+    currentB = b;
+    currentResult = result;
+    currentOp = op;
+
     document.getElementById('result-text').textContent = 'Result: ' + result;
     document.getElementById('binA').textContent = toBin(a);
     document.getElementById('binB').textContent = toBin(b);
     document.getElementById('binOut').textContent = toBin(result);
 
-    // Start animated data flow
-    startDataFlowAnimation(a, b, result, op);
+    isAnimating = true;
+    animationStartTime = performance.now();
+
+    // Cancel any existing animation loop before starting a new one
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+    animate();
   }
 
   function toBin(n) {
     return ('00000000' + (n >>> 0).toString(2)).slice(-8);
-  }
-
-  /* ---------- Data Flow Animation ---------- */
-  function startDataFlowAnimation(a, b, result, op) {
-    // Remove old particles
-    flowParticles.forEach(function (p) { scene.remove(p); });
-    flowParticles = [];
-
-    isAnimating = true;
-    animationTime = 0;
-
-    var bitsA = toBin(a).split('').map(Number);
-    var bitsB = toBin(b).split('').map(Number);
-    var bitsR = toBin(result).split('').map(Number);
-
-    // Animate wires bit by bit — light them up sequentially
-    var totalDuration = 300; // frames at speed=5
-    var speedFactor = animationSpeed / 5;
-
-    wireObjects.forEach(function (w) {
-      w.mat.color.setHex(C.wire);
-      w.mat.opacity = 0.4;
-      w.active = false;
-    });
-
-    gateObjects.forEach(function (g) {
-      if (g.mesh.userData.edgeMat) {
-        g.mesh.userData.edgeMat.opacity = 0;
-      }
-    });
-
-    // Create flow particles for each bit
-    for (var bit = 0; bit < 8; bit++) {
-      var aVal = bitsA[7 - bit];
-      var bVal = bitsB[7 - bit];
-
-      // Particles travel from input to gate to output
-      var x = (bit - 3.5) * 4.2;
-      var delay = bit * (30 / speedFactor);
-
-      // Input A particle
-      createFlowParticle(
-        new THREE.Vector3(x - 0.5, 0.5, -5.5),
-        new THREE.Vector3(x - 0.5, 0.5, -2),
-        delay, aVal ? C.inputOn : C.inputOff, speedFactor
-      );
-
-      // Input B particle
-      createFlowParticle(
-        new THREE.Vector3(x + 0.5, 0.5, -5.5),
-        new THREE.Vector3(x + 0.5, 0.5, -2),
-        delay, bVal ? C.inputOn : C.inputOff, speedFactor
-      );
-
-      // Through gates
-      createFlowParticle(
-        new THREE.Vector3(x, 0.5, -2),
-        new THREE.Vector3(x, 0.5, 2.5),
-        delay + 40 / speedFactor, 0x448AFF, speedFactor
-      );
-
-      // To output
-      var rVal = bitsR[7 - bit];
-      createFlowParticle(
-        new THREE.Vector3(x, 0.5, 2.5),
-        new THREE.Vector3(x, 0.5, 6),
-        delay + 80 / speedFactor, rVal ? C.glow : C.inputOff, speedFactor
-      );
-
-      // Activate gates with delay
-      activateGateAfterDelay(bit, delay + 30 / speedFactor);
-      activateWiresAfterDelay(bit, delay + 20 / speedFactor);
-    }
-  }
-
-  function createFlowParticle(startPos, endPos, delayFrames, color, speedFactor) {
-    var geo = new THREE.SphereGeometry(0.18, 12, 12);
-    var mat = new THREE.MeshStandardMaterial({
-      color: color,
-      emissive: color,
-      emissiveIntensity: 0.8,
-      transparent: true,
-      opacity: 0
-    });
-    var mesh = new THREE.Mesh(geo, mat);
-    mesh.position.copy(startPos);
-    scene.add(mesh);
-
-    mesh.userData = {
-      startPos: startPos.clone(),
-      endPos: endPos.clone(),
-      delay: delayFrames,
-      duration: 60 / speedFactor,
-      elapsed: 0,
-      started: false,
-      finished: false
-    };
-
-    flowParticles.push(mesh);
-    return mesh;
-  }
-
-  function activateGateAfterDelay(bit, delay) {
-    var startFrame = animationTime + delay;
-    var gates = gateObjects.filter(function (g) { return g.bit === bit; });
-
-    function check() {
-      if (animationTime >= startFrame) {
-        gates.forEach(function (g) {
-          if (g.mesh.userData.edgeMat) {
-            g.mesh.userData.edgeMat.opacity = 0.9;
-            g.mesh.userData.edgeMat.color.setHex(C.glow);
-          }
-        });
-      } else {
-        requestAnimationFrame(check);
-      }
-    }
-    check();
-  }
-
-  function activateWiresAfterDelay(bit, delay) {
-    var startFrame = animationTime + delay;
-    var wires = wireObjects.filter(function (w) { return w.bit === bit; });
-
-    function check() {
-      if (animationTime >= startFrame) {
-        wires.forEach(function (w) {
-          w.mat.color.setHex(C.wireOn);
-          w.mat.opacity = 0.9;
-        });
-      } else {
-        requestAnimationFrame(check);
-      }
-    }
-    check();
   }
 
   /* ================================================================
@@ -396,81 +368,95 @@
      ================================================================ */
   function animate() {
     animationId = requestAnimationFrame(animate);
-    controls.update();
-    animationTime++;
 
-    // Update flow particles
-    if (isAnimating) {
-      var allDone = true;
-      flowParticles.forEach(function (p) {
-        var d = p.userData;
-        if (d.finished) return;
+    var w = canvas.width / dpr;
+    var h = canvas.height / dpr;
 
-        d.elapsed++;
+    // Redraw static circuit
+    drawCircuit();
 
-        if (d.elapsed < d.delay) {
-          allDone = false;
-          return;
-        }
+    if (!isAnimating) return;
 
-        if (!d.started) {
-          d.started = true;
-          p.material.opacity = 1;
-        }
+    var elapsed = (performance.now() - animationStartTime) / 1000;
+    var speedFactor = animationSpeed / 5;
+    var totalDuration = 3.0 / speedFactor;
 
-        var progress = (d.elapsed - d.delay) / d.duration;
-        if (progress >= 1) {
-          progress = 1;
-          d.finished = true;
-          // Fade out
-          p.material.opacity = 0.3;
-        } else {
-          allDone = false;
-          // Pulsing glow
-          p.material.emissiveIntensity = 0.5 + 0.5 * Math.sin(d.elapsed * 0.3);
-        }
-
-        p.position.lerpVectors(d.startPos, d.endPos, progress);
-      });
-
-      if (allDone && flowParticles.length > 0) {
-        isAnimating = false;
-      }
+    if (elapsed > totalDuration) {
+      isAnimating = false;
+      return;
     }
 
-    renderer.render(scene, camera);
+    var margin = 40;
+    var bitW = (w - margin * 2) / 8;
+    var topY = 50;
+    var gateY1 = topY + 80;
+    var gateY2 = gateY1 + 70;
+    var outY = gateY2 + 70 + 60;
+
+    var bitsA = toBin(currentA).split('').map(Number);
+    var bitsB = toBin(currentB).split('').map(Number);
+    var bitsR = toBin(currentResult).split('').map(Number);
+
+    // Draw flowing animation per bit
+    for (var bit = 0; bit < 8; bit++) {
+      var cx = margin + bitW * bit + bitW / 2;
+      var bitDelay = bit * (0.15 / speedFactor);
+      var bitElapsed = Math.max(0, elapsed - bitDelay);
+      var bitDur = (totalDuration - bitDelay) / 3;
+
+      var aVal = bitsA[bit];
+      var bVal = bitsB[bit];
+      var rVal = bitsR[bit];
+
+      // Phase 1: input to XOR gate
+      var p1 = Math.min(bitElapsed / bitDur, 1);
+      if (p1 > 0) {
+        drawFlowOnWire(cx - 10, topY + 22, cx - 6, gateY1 - 12, p1, aVal ? C.flowHigh : C.flowLow);
+        drawFlowOnWire(cx + 10, topY + 22, cx + 6, gateY1 - 12, p1, bVal ? C.flowHigh : C.flowLow);
+      }
+
+      // Phase 2: through gates
+      var p2 = Math.min(Math.max(0, (bitElapsed - bitDur) / bitDur), 1);
+      if (p2 > 0) {
+        drawFlowOnWire(cx, gateY1 + 14, cx, gateY2 - 12, p2, '#448AFF');
+      }
+
+      // Phase 3: to output
+      var p3 = Math.min(Math.max(0, (bitElapsed - bitDur * 2) / bitDur), 1);
+      if (p3 > 0) {
+        drawFlowOnWire(cx, gateY2 + 14, cx, outY - 6, p3, rVal ? C.flowHigh : C.flowLow);
+      }
+    }
   }
 
-  /* ---- Resize ---- */
-  function onResize() {
-    var canvas = renderer.domElement;
-    var parent = canvas.parentElement;
-    if (!parent) return;
-    var w = parent.clientWidth;
-    var h = parent.clientHeight;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+  /* ---- Helpers ---- */
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
   }
 
-  /* ---- Label helper ---- */
-  function addLabel(scene, text, x, y, z, color, scale) {
-    var canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 64;
-    var ctx = canvas.getContext('2d');
-    ctx.font = 'bold 32px sans-serif';
-    ctx.fillStyle = color || '#263238';
-    ctx.textAlign = 'center';
-    ctx.fillText(text, 256, 44);
+  function shadeColor(hex, amt) {
+    var r = parseInt(hex.slice(1, 3), 16) + amt;
+    var g = parseInt(hex.slice(3, 5), 16) + amt;
+    var b = parseInt(hex.slice(5, 7), 16) + amt;
+    r = Math.max(0, Math.min(255, r));
+    g = Math.max(0, Math.min(255, g));
+    b = Math.max(0, Math.min(255, b));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
 
-    var tex = new THREE.CanvasTexture(canvas);
-    tex.minFilter = THREE.LinearFilter;
-    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
-    var sprite = new THREE.Sprite(mat);
-    sprite.position.set(x, y, z);
-    sprite.scale.set(scale || 2, (scale || 2) * 0.15, 1);
-    scene.add(sprite);
+  function colorWithAlpha(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16);
+    var g = parseInt(hex.slice(3, 5), 16);
+    var b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
 })();
