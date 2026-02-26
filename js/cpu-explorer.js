@@ -7,7 +7,7 @@
 
   /* ---- State ---- */
   const LAYERS = ['package', 'die', 'cores', 'transistors'];
-  const LAYER_LABELS = { package: 'Chip Package', die: 'CPU Die', cores: 'Cores & Cache', transistors: 'Transistors' };
+  const LAYER_LABELS = { package: 'Chip Package (~50 mm)', die: 'CPU Die (~10 mm)', cores: 'Cores & Cache (~1 mm)', transistors: 'Transistors (~5 nm)' };
   let currentLayerIndex = 0;
   let scene, camera, renderer, controls;
   let groups = {};          // { package, die, cores, transistors }
@@ -36,6 +36,10 @@
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
 
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -66,6 +70,15 @@
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const dir = new THREE.DirectionalLight(0xffffff, 0.8);
     dir.position.set(15, 25, 15);
+    dir.castShadow = true;
+    dir.shadow.mapSize.width = 2048;
+    dir.shadow.mapSize.height = 2048;
+    dir.shadow.camera.near = 0.5;
+    dir.shadow.camera.far = 60;
+    dir.shadow.camera.left = -20;
+    dir.shadow.camera.right = 20;
+    dir.shadow.camera.top = 20;
+    dir.shadow.camera.bottom = -20;
     scene.add(dir);
     const dir2 = new THREE.DirectionalLight(0xffffff, 0.3);
     dir2.position.set(-10, 10, -10);
@@ -362,29 +375,30 @@
 
     LAYERS.forEach(function (name, i) {
       if (groups[name]) {
-        groups[name].visible = (i <= currentLayerIndex);
-        // Fade outer layers when zoomed in
-        if (i < currentLayerIndex && groups[name].visible) {
-          groups[name].traverse(function (child) {
-            if (child.material && child.material.opacity !== undefined) {
-              child.material.transparent = true;
-              child.material.opacity = 0.15;
-            }
-          });
+        // Layers peel away: outer layers are hidden when zoomed past
+        if (i < currentLayerIndex) {
+          groups[name].visible = false;
         } else if (i === currentLayerIndex) {
+          groups[name].visible = true;
           groups[name].traverse(function (child) {
-            if (child.material && child.material.opacity !== undefined && child.material._origOpacity === undefined) {
-              child.material.transparent = false;
-              child.material.opacity = 1;
+            if (child.material) {
+              if (child.material._origOpacity === undefined) {
+                child.material._origOpacity = child.material.opacity;
+              }
+              child.material.transparent = child.material._origOpacity < 1;
+              child.material.opacity = child.material._origOpacity;
             }
           });
+        } else {
+          groups[name].visible = false;
         }
       }
     });
 
     // Update legend
     document.querySelectorAll('.legend-item').forEach(function (el, i) {
-      el.classList.toggle('active', i <= currentLayerIndex);
+      el.classList.toggle('active', i === currentLayerIndex);
+      el.classList.toggle('passed', i < currentLayerIndex);
     });
   }
 
@@ -405,17 +419,28 @@
       updateLayerVisibility(layerIdx);
     }
 
-    // Update UI
+    // Update UI — exponential zoom scale up to 1,000,000,000×
     var maxDist = 40, minDist = 2;
     var pct = 1 - (dist - minDist) / (maxDist - minDist);
     pct = Math.max(0, Math.min(1, pct));
-    var zoomMultiplier = (1 + pct * 19).toFixed(1);
+    // Exponential mapping: 10^(pct * 9) gives 1× at 0% to 1,000,000,000× at 100%
+    var zoomMultiplier = Math.pow(10, pct * 9);
+    var zoomLabel;
+    if (zoomMultiplier >= 1e9) {
+      zoomLabel = (zoomMultiplier / 1e9).toFixed(1) + 'B×';
+    } else if (zoomMultiplier >= 1e6) {
+      zoomLabel = (zoomMultiplier / 1e6).toFixed(1) + 'M×';
+    } else if (zoomMultiplier >= 1e3) {
+      zoomLabel = (zoomMultiplier / 1e3).toFixed(1) + 'K×';
+    } else {
+      zoomLabel = zoomMultiplier.toFixed(1) + '×';
+    }
 
     var fillEl = document.getElementById('zoom-bar-fill');
     var valEl = document.getElementById('zoom-value');
     var nameEl = document.getElementById('zoom-level-name');
     if (fillEl) fillEl.style.width = (pct * 100) + '%';
-    if (valEl) valEl.textContent = zoomMultiplier + '×';
+    if (valEl) valEl.textContent = zoomLabel;
     if (nameEl) nameEl.textContent = LAYER_LABELS[LAYERS[currentLayerIndex]];
   }
 

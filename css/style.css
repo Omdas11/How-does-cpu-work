@@ -129,6 +129,7 @@ nav { display: flex; gap: 28px; }
 }
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: .78rem; color: var(--dark); opacity: .5; transition: opacity var(--transition); }
 .legend-item.active { opacity: 1; font-weight: 600; }
+.legend-item.passed { opacity: .35; text-decoration: line-through; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
 /* ---------- Transistor Section ---------- */
