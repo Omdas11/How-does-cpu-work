@@ -280,6 +280,35 @@
   }
 
   /* ================================================================
+     SCROLL TO NOTE — used by die blocks
+     ================================================================ */
+  function scrollToNote(noteTitle) {
+    var headers = document.querySelectorAll('.note-header');
+    for (var i = 0; i < headers.length; i++) {
+      var btn = headers[i];
+      var span = btn.querySelector('span');
+      if (span && span.textContent.trim() === noteTitle) {
+        var body = btn.nextElementSibling;
+        /* Expand the note if collapsed */
+        if (btn.getAttribute('aria-expanded') !== 'true') {
+          btn.setAttribute('aria-expanded', 'true');
+          body.hidden = false;
+        }
+        /* Scroll into view */
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        /* Brief highlight */
+        var item = btn.closest('.note-item');
+        if (item) {
+          item.style.outline = '2px solid #0288D1';
+          item.style.outlineOffset = '2px';
+          setTimeout(function () { item.style.outline = ''; item.style.outlineOffset = ''; }, 2000);
+        }
+        return;
+      }
+    }
+  }
+
+  /* ================================================================
      CLICK HANDLERS — attach to all clickable elements
      ================================================================ */
   function attachClickHandlers() {
@@ -297,16 +326,26 @@
       });
     });
 
-    /* HTML die blocks */
+    /* HTML die blocks — scroll to matching note */
     var dieBlocks = document.querySelectorAll('.die-block.clickable');
     dieBlocks.forEach(function (el) {
       el.addEventListener('click', function () {
-        openModal(el.dataset.component);
+        var noteTitle = el.dataset.note;
+        if (noteTitle) {
+          scrollToNote(noteTitle);
+        } else {
+          openModal(el.dataset.component);
+        }
       });
       el.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          openModal(el.dataset.component);
+          var noteTitle = el.dataset.note;
+          if (noteTitle) {
+            scrollToNote(noteTitle);
+          } else {
+            openModal(el.dataset.component);
+          }
         }
       });
     });
