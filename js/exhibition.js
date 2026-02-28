@@ -299,9 +299,8 @@
         /* Brief highlight */
         var item = btn.closest('.note-item');
         if (item) {
-          item.style.outline = '2px solid #0288D1';
-          item.style.outlineOffset = '2px';
-          setTimeout(function () { item.style.outline = ''; item.style.outlineOffset = ''; }, 2000);
+          item.classList.add('note-highlight');
+          setTimeout(function () { item.classList.remove('note-highlight'); }, 2000);
         }
         return;
       }
