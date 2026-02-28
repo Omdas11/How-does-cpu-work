@@ -46,7 +46,7 @@
 
     /* ---- Initialize exhibition modules ---- */
     if (typeof window.initExhibition === 'function') window.initExhibition();
-    if (typeof window.initLogicSimulator === 'function') window.initLogicSimulator();
+    if (typeof window.initTransistorViewer === 'function') window.initTransistorViewer();
   });
 
 })();
