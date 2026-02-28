@@ -16,7 +16,6 @@
         <a href="#arch-section"       class="nav-link active" data-section="arch-section">Architecture</a>
         <a href="#cpu-block-section"  class="nav-link" data-section="cpu-block-section">CPU Layout</a>
         <a href="#transistor-section" class="nav-link" data-section="transistor-section">Transistors</a>
-        <a href="#logic-section"      class="nav-link" data-section="logic-section">Logic &amp; Arithmetic</a>
         <a href="#notes-section"      class="nav-link" data-section="notes-section">Notes</a>
         <a href="#about-section"      class="nav-link" data-section="about-section">About</a>
       </nav>
@@ -139,9 +138,9 @@
 
         <!-- CPU to Memory (down) and Memory to CPU (up) arrows -->
         <line x1="368" y1="303" x2="368" y2="277" stroke="#0288D1" stroke-width="2.5"
-              marker-end="url(#arr-blue-up)"/>
+              marker-end="url(#arr-blue)"/>
         <line x1="392" y1="277" x2="392" y2="303" stroke="#0288D1" stroke-width="2.5"
-              marker-end="url(#arr-blue-dn)"/>
+              marker-end="url(#arr-blue)"/>
         <text x="408" y="293" font-size="9" fill="#0288D1"
               font-family="'Segoe UI',system-ui,sans-serif">address/data</text>
       </svg>
@@ -159,22 +158,22 @@
         <div class="die-block core-block clickable" data-component="cpu-core"
              tabindex="0" role="button" aria-label="Core 1">
           <span class="die-label">Core 1</span>
-          <span class="die-sub">P-Core</span>
+          <span class="die-sub">P-Core · L1 + L2</span>
         </div>
         <div class="die-block core-block clickable" data-component="cpu-core"
              tabindex="0" role="button" aria-label="Core 2">
           <span class="die-label">Core 2</span>
-          <span class="die-sub">P-Core</span>
+          <span class="die-sub">P-Core · L1 + L2</span>
         </div>
         <div class="die-block core-block clickable" data-component="cpu-core"
              tabindex="0" role="button" aria-label="Core 3">
           <span class="die-label">Core 3</span>
-          <span class="die-sub">E-Core</span>
+          <span class="die-sub">E-Core · L1 + L2</span>
         </div>
         <div class="die-block core-block clickable" data-component="cpu-core"
              tabindex="0" role="button" aria-label="Core 4">
           <span class="die-label">Core 4</span>
-          <span class="die-sub">E-Core</span>
+          <span class="die-sub">E-Core · L1 + L2</span>
         </div>
       </div>
       <!-- Row 2: Shared L3 Cache -->
@@ -228,31 +227,31 @@
             <title id="mosfet-svg-title">MOSFET Cross-Section Diagram</title>
             <!-- p-type substrate/body -->
             <g class="t-component" data-component="mosfet-body" tabindex="0" role="button" aria-label="p-type Body">
-              <rect x="10" y="158" width="300" height="82" rx="4"
+              <rect x="10" y="140" width="300" height="100" rx="4"
                     fill="#BBDEFB" stroke="#64B5F6" stroke-width="1.2"/>
-              <text x="160" y="202" text-anchor="middle" font-size="11" fill="#1565C0"
+              <text x="160" y="218" text-anchor="middle" font-size="11" fill="#1565C0"
                     font-family="'Segoe UI',system-ui,sans-serif">p-type Body (Substrate)</text>
+            </g>
+            <!-- Source n+ (embedded in body) -->
+            <g class="t-component" data-component="mosfet-source" tabindex="0" role="button" aria-label="Source">
+              <rect x="10" y="100" width="80" height="76" rx="3"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="50" y="140" text-anchor="middle" font-size="11" fill="#BF360C"
+                    font-family="'Segoe UI',system-ui,sans-serif">n+ Source</text>
+            </g>
+            <!-- Drain n+ (embedded in body) -->
+            <g class="t-component" data-component="mosfet-drain" tabindex="0" role="button" aria-label="Drain">
+              <rect x="230" y="100" width="80" height="76" rx="3"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="270" y="140" text-anchor="middle" font-size="11" fill="#BF360C"
+                    font-family="'Segoe UI',system-ui,sans-serif">n+ Drain</text>
             </g>
             <!-- Channel region -->
             <g class="t-component" data-component="mosfet-channel" tabindex="0" role="button" aria-label="Channel">
-              <rect x="90" y="100" width="140" height="58" rx="3"
+              <rect x="90" y="100" width="140" height="40" rx="3"
                     fill="#C8E6C9" stroke="#66BB6A" stroke-width="1.2" stroke-dasharray="4,2"/>
-              <text x="160" y="134" text-anchor="middle" font-size="11" fill="#2E7D32"
+              <text x="160" y="124" text-anchor="middle" font-size="11" fill="#2E7D32"
                     font-family="'Segoe UI',system-ui,sans-serif">Channel</text>
-            </g>
-            <!-- Source n+ -->
-            <g class="t-component" data-component="mosfet-source" tabindex="0" role="button" aria-label="Source">
-              <rect x="10" y="100" width="80" height="58" rx="3"
-                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
-              <text x="50" y="132" text-anchor="middle" font-size="11" fill="#BF360C"
-                    font-family="'Segoe UI',system-ui,sans-serif">n+</text>
-            </g>
-            <!-- Drain n+ -->
-            <g class="t-component" data-component="mosfet-drain" tabindex="0" role="button" aria-label="Drain">
-              <rect x="230" y="100" width="80" height="58" rx="3"
-                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
-              <text x="270" y="132" text-anchor="middle" font-size="11" fill="#BF360C"
-                    font-family="'Segoe UI',system-ui,sans-serif">n+</text>
             </g>
             <!-- Gate oxide -->
             <g class="t-component" data-component="mosfet-oxide" tabindex="0" role="button" aria-label="Gate Oxide">
@@ -337,23 +336,27 @@
               <rect x="82"  y="62"  width="30" height="106" fill="#546E7A" stroke="#263238" stroke-width="1.2"/>
               <rect x="208" y="62"  width="30" height="106" fill="#546E7A" stroke="#263238" stroke-width="1.2"/>
             </g>
-            <!-- Source label -->
+            <!-- Source label (along fin axis — into page) -->
             <g class="t-component" data-component="finfet-source" tabindex="0" role="button" aria-label="Source">
-              <rect x="20" y="24" width="54" height="26" rx="4"
+              <rect x="20" y="100" width="54" height="40" rx="4"
                     fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
-              <text x="47" y="41" text-anchor="middle" font-size="11" font-weight="bold"
+              <text x="47" y="117" text-anchor="middle" font-size="10" font-weight="bold"
                     fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">Source</text>
+              <text x="47" y="131" text-anchor="middle" font-size="8"
+                    fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">(into page)</text>
             </g>
-            <!-- Drain label -->
+            <!-- Drain label (along fin axis — out of page) -->
             <g class="t-component" data-component="finfet-drain" tabindex="0" role="button" aria-label="Drain">
-              <rect x="246" y="24" width="54" height="26" rx="4"
+              <rect x="246" y="100" width="54" height="40" rx="4"
                     fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
-              <text x="273" y="41" text-anchor="middle" font-size="11" font-weight="bold"
+              <text x="273" y="117" text-anchor="middle" font-size="10" font-weight="bold"
                     fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">Drain</text>
+              <text x="273" y="131" text-anchor="middle" font-size="8"
+                    fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">(out of page)</text>
             </g>
             <!-- Dashed lines indicating fin axis direction -->
-            <line x1="74"  y1="37" x2="111" y2="37" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
-            <line x1="209" y1="37" x2="246" y2="37" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="74"  y1="120" x2="111" y2="120" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="209" y1="120" x2="246" y2="120" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
             <!-- Gate oxide side label -->
             <text x="8"  y="115" text-anchor="middle" font-size="9" fill="#6A1B9A"
                   font-family="'Segoe UI',system-ui,sans-serif">Gate</text>
@@ -367,49 +370,6 @@
         </div>
       </div>
 
-    </div>
-  </section>
-
-  <!-- LOGIC GATE ARITHMETIC -->
-  <section id="logic-section" class="content-section">
-    <h2>Logic Gates &amp; Arithmetic</h2>
-    <p class="section-desc">See how CPUs perform calculations using logic gates. Enter decimal numbers and watch data flow through the circuit.</p>
-    <div class="logic-controls">
-      <div class="input-group">
-        <label for="inputA">Number A</label>
-        <input type="number" id="inputA" value="5" min="0" max="255">
-      </div>
-      <div class="input-group">
-        <label for="operation">Operation</label>
-        <select id="operation">
-          <option value="add">Addition (+)</option>
-          <option value="sub">Subtraction (-)</option>
-          <option value="and">Bitwise AND (&amp;)</option>
-          <option value="or">Bitwise OR (|)</option>
-          <option value="xor">Bitwise XOR (^)</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label for="inputB">Number B</label>
-        <input type="number" id="inputB" value="3" min="0" max="255">
-      </div>
-      <button id="calculate-btn" class="btn-primary">Calculate</button>
-    </div>
-    <div class="speed-control">
-      <label for="speed-slider">Animation Speed</label>
-      <input type="range" id="speed-slider" min="1" max="10" value="5">
-      <span id="speed-label">5</span>
-    </div>
-    <div class="viewer-wrapper logic-viewer">
-      <canvas id="logic-canvas"></canvas>
-      <div id="result-display">
-        <span id="result-text">Result: &#8212;</span>
-        <div id="binary-display">
-          <div class="binary-row"><span class="bin-label">A:</span>   <span id="binA">00000000</span></div>
-          <div class="binary-row"><span class="bin-label">B:</span>   <span id="binB">00000000</span></div>
-          <div class="binary-row"><span class="bin-label">Out:</span> <span id="binOut">00000000</span></div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -546,6 +506,71 @@
         </div>
       </div>
 
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Von Neumann Architecture</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>Von Neumann architecture</strong> (1945) stores both program instructions and data in the same memory, connected to the CPU via a shared bus. This "stored-program" concept is the foundation of virtually all modern computers.</p>
+          <ul>
+            <li><strong>Fetch</strong> &#8212; the CPU reads the next instruction from memory via the address bus.</li>
+            <li><strong>Decode</strong> &#8212; the Control Unit interprets the instruction opcode.</li>
+            <li><strong>Execute</strong> &#8212; the ALU or other unit performs the operation.</li>
+            <li><strong>Store</strong> &#8212; the result is written back to a register or memory.</li>
+          </ul>
+          <p><strong>Von Neumann bottleneck:</strong> Because instructions and data share a single bus, memory bandwidth limits performance. Caches, prefetching, and Harvard-style splits (separate L1i / L1d caches) mitigate this.</p>
+        </div>
+      </div>
+
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Process Nodes &amp; Moore&#39;s Law</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>A <strong>process node</strong> (e.g. 5 nm, 3 nm) historically referred to the transistor gate length. Today it is a marketing name &#8212; actual feature sizes vary by manufacturer.</p>
+          <ul>
+            <li><strong>Moore&#39;s Law</strong> &#8212; transistor count doubles roughly every 2 years. Still broadly on track thanks to FinFET, EUV lithography, and 3D stacking.</li>
+            <li><strong>EUV Lithography</strong> &#8212; Extreme Ultraviolet (13.5 nm wavelength) light enables patterning features below 7 nm in a single exposure.</li>
+            <li><strong>Dennard Scaling</strong> &#8212; historically, smaller transistors used proportionally less power. This broke down around 2006, leading to the multi-core era.</li>
+          </ul>
+          <p><strong>Example:</strong> Apple M4 (TSMC 3 nm, 2nd gen) packs ~28 billion transistors. Intel 18A targets ~1.8 nm-class features with GAA RibbonFET.</p>
+        </div>
+      </div>
+
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Power, Thermals &amp; TDP</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>Every transistor switch dissipates energy. Managing <strong>power</strong> and <strong>heat</strong> is one of the biggest challenges in CPU design.</p>
+          <ul>
+            <li><strong>Dynamic power</strong> &#8212; P = C &times; V&sup2; &times; f. Proportional to capacitance, voltage squared, and clock frequency.</li>
+            <li><strong>Static (leakage) power</strong> &#8212; current that flows even when transistors are "off". Dominates at small nodes; FinFET and GAA reduce it.</li>
+            <li><strong>TDP (Thermal Design Power)</strong> &#8212; the maximum sustained heat output the cooler must handle. E.g. 125 W for a desktop CPU, 15&#8211;28 W for a laptop.</li>
+          </ul>
+          <p><strong>Techniques:</strong> Dynamic voltage/frequency scaling (DVFS), clock gating, power gating of idle cores, and heterogeneous core designs (P-Core / E-Core).</p>
+        </div>
+      </div>
+
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Instruction Set Architecture (ISA)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>ISA</strong> defines the set of instructions a CPU understands &#8212; it is the contract between hardware and software.</p>
+          <ul>
+            <li><strong>x86-64 (CISC)</strong> &#8212; Complex Instruction Set. Used by Intel and AMD desktop/server CPUs. Variable-length instructions, rich addressing modes.</li>
+            <li><strong>ARM (RISC)</strong> &#8212; Reduced Instruction Set. Used in smartphones, tablets, and Apple Silicon Macs. Fixed-length instructions, energy-efficient.</li>
+            <li><strong>RISC-V</strong> &#8212; Open-source RISC ISA gaining traction in embedded, research, and increasingly in consumer devices.</li>
+          </ul>
+          <p><strong>Example:</strong> Apple&#39;s M-series chips use ARMv8/v9 ISA. AMD and Intel use x86-64 with extensions like AVX-512 for vector processing.</p>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -562,7 +587,6 @@
         <ul>
           <li><strong>Click</strong> any diagram component to open a popup with full explanation.</li>
           <li><strong>Expand</strong> notes topics with the + button.</li>
-          <li><strong>Calculate</strong> logic operations to see data flowing through gates.</li>
         </ul>
       </div>
       <div class="about-card">
@@ -585,7 +609,6 @@
           <li><a href="#arch-section">Architecture</a></li>
           <li><a href="#cpu-block-section">CPU Layout</a></li>
           <li><a href="#transistor-section">Transistors</a></li>
-          <li><a href="#logic-section">Logic &amp; Arithmetic</a></li>
           <li><a href="#notes-section">Notes</a></li>
         </ul>
       </div>
@@ -617,7 +640,6 @@
 
   <!-- Scripts (no Three.js) -->
   <script src="js/exhibition.js"></script>
-  <script src="js/logic-simulator.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
