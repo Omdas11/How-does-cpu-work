@@ -3,90 +3,377 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How Does a CPU Work? — 3D Interactive Exhibition</title>
+  <title>How Does a CPU Work? &#8212; Interactive Exhibition</title>
   <link rel="stylesheet" href="css/style.css">
-  <!-- Three.js & OrbitControls (local) -->
-  <script src="lib/three.min.js"></script>
-  <script src="lib/OrbitControls.js"></script>
 </head>
 <body>
 
-  <!-- ====== HEADER ====== -->
+  <!-- HEADER -->
   <header id="site-header">
     <div class="header-inner">
-      <div class="logo">⚙ CPU Explorer</div>
+      <div class="logo">&#9881; CPU Explorer</div>
       <nav>
-        <a href="#cpu-section" class="nav-link active" data-section="cpu-section">CPU Layers</a>
+        <a href="#arch-section"       class="nav-link active" data-section="arch-section">Architecture</a>
+        <a href="#cpu-block-section"  class="nav-link" data-section="cpu-block-section">CPU Layout</a>
         <a href="#transistor-section" class="nav-link" data-section="transistor-section">Transistors</a>
-        <a href="#logic-section" class="nav-link" data-section="logic-section">Logic &amp; Arithmetic</a>
-        <a href="#notes-section" class="nav-link" data-section="notes-section">Notes</a>
-        <a href="#about-section" class="nav-link" data-section="about-section">About</a>
+        <a href="#logic-section"      class="nav-link" data-section="logic-section">Logic &amp; Arithmetic</a>
+        <a href="#notes-section"      class="nav-link" data-section="notes-section">Notes</a>
+        <a href="#about-section"      class="nav-link" data-section="about-section">About</a>
       </nav>
-      <button id="menu-toggle" aria-label="Toggle menu">☰</button>
+      <button id="menu-toggle" aria-label="Toggle menu">&#9776;</button>
     </div>
   </header>
 
-  <!-- ====== HERO ====== -->
+  <!-- HERO -->
   <section id="hero">
     <h1>How Does a CPU Work?</h1>
-    <p>Explore the layers of a modern processor — from the chip package down to individual transistors</p>
-    <a href="#cpu-section" class="btn-primary">Start Exploring ↓</a>
+    <p>Explore the architecture of a modern processor from Von Neumann design down to individual transistors</p>
+    <a href="#arch-section" class="btn-primary">Start Exploring</a>
   </section>
 
-  <!-- ====== CPU 3D EXPLORER ====== -->
-  <section id="cpu-section" class="content-section">
-    <h2>CPU Layer Explorer</h2>
-    <p class="section-desc">Zoom in through each layer of the CPU: package → die → cores → transistors. Use scroll or pinch to zoom, drag to rotate.</p>
-    <div class="viewer-wrapper">
-      <canvas id="cpu-canvas"></canvas>
-      <!-- Zoom scale indicator -->
-      <div id="zoom-indicator">
-        <div class="zoom-label">Zoom Level</div>
-        <div class="zoom-bar-track">
-          <div class="zoom-bar-fill" id="zoom-bar-fill"></div>
+  <!-- VON NEUMANN ARCHITECTURE -->
+  <section id="arch-section" class="content-section">
+    <h2>Von Neumann Architecture</h2>
+    <p class="section-desc">The foundation of all modern computers, first described by John von Neumann in 1945.
+      <strong>Click any component</strong> to learn what it is, how it works, and why it matters.</p>
+    <div class="diagram-container">
+      <svg class="vn-svg" viewBox="0 0 760 390" xmlns="http://www.w3.org/2000/svg"
+           role="img" aria-labelledby="vn-svg-title">
+        <title id="vn-svg-title">Von Neumann Architecture Diagram</title>
+        <defs>
+          <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#0288D1"/>
+          </marker>
+          <marker id="arr-blue-up" markerWidth="8" markerHeight="8" refX="3" refY="1" orient="auto">
+            <path d="M0,8 L6,8 L3,0 z" fill="#0288D1"/>
+          </marker>
+          <marker id="arr-blue-dn" markerWidth="8" markerHeight="8" refX="3" refY="7" orient="auto">
+            <path d="M0,0 L6,0 L3,8 z" fill="#0288D1"/>
+          </marker>
+          <marker id="arr-inner" markerWidth="6" markerHeight="6" refX="5" refY="2.5" orient="auto">
+            <path d="M0,0 L0,5 L6,2.5 z" fill="#546E7A"/>
+          </marker>
+          <marker id="arr-inner-rev" markerWidth="6" markerHeight="6" refX="1" refY="2.5" orient="auto">
+            <path d="M6,0 L6,5 L0,2.5 z" fill="#546E7A"/>
+          </marker>
+        </defs>
+
+        <!-- CPU outer box -->
+        <rect x="195" y="70" width="370" height="205" rx="10"
+              fill="#E3F2FD" stroke="#0288D1" stroke-width="2"/>
+        <text x="380" y="97" text-anchor="middle" font-size="14" font-weight="bold" fill="#01579B"
+              font-family="'Segoe UI',system-ui,sans-serif">CPU (Central Processing Unit)</text>
+
+        <!-- Control Unit (clickable) -->
+        <g class="vn-component" data-component="control-unit"
+           tabindex="0" role="button" aria-label="Control Unit">
+          <rect x="215" y="113" width="145" height="85" rx="7"
+                fill="#0288D1" stroke="#01579B" stroke-width="1.5"/>
+          <text x="287" y="153" text-anchor="middle" font-size="13" font-weight="bold"
+                fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Control</text>
+          <text x="287" y="172" text-anchor="middle" font-size="13"
+                fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Unit</text>
+        </g>
+
+        <!-- ALU (clickable) -->
+        <g class="vn-component" data-component="alu"
+           tabindex="0" role="button" aria-label="Arithmetic Logic Unit">
+          <rect x="400" y="113" width="145" height="85" rx="7"
+                fill="#0288D1" stroke="#01579B" stroke-width="1.5"/>
+          <text x="472" y="148" text-anchor="middle" font-size="13" font-weight="bold"
+                fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Arithmetic</text>
+          <text x="472" y="167" text-anchor="middle" font-size="13"
+                fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Logic Unit</text>
+          <text x="472" y="184" text-anchor="middle" font-size="11"
+                fill="#B3E5FC" font-family="'Segoe UI',system-ui,sans-serif">(ALU)</text>
+        </g>
+
+        <!-- CU to ALU bidirectional arrow -->
+        <line x1="360" y1="155" x2="400" y2="155" stroke="#546E7A" stroke-width="2"
+              marker-end="url(#arr-inner)" marker-start="url(#arr-inner-rev)"/>
+
+        <!-- Input Device (clickable) -->
+        <g class="vn-component" data-component="input-device"
+           tabindex="0" role="button" aria-label="Input Device">
+          <rect x="20" y="148" width="135" height="80" rx="8"
+                fill="#F5F5F5" stroke="#546E7A" stroke-width="2"/>
+          <text x="87" y="185" text-anchor="middle" font-size="13" font-weight="bold"
+                fill="#263238" font-family="'Segoe UI',system-ui,sans-serif">Input</text>
+          <text x="87" y="204" text-anchor="middle" font-size="13"
+                fill="#546E7A" font-family="'Segoe UI',system-ui,sans-serif">Device</text>
+        </g>
+
+        <!-- Input to CPU arrow -->
+        <line x1="155" y1="188" x2="193" y2="188" stroke="#0288D1" stroke-width="2.5"
+              marker-end="url(#arr-blue)"/>
+        <text x="174" y="183" text-anchor="middle" font-size="9" fill="#0288D1"
+              font-family="'Segoe UI',system-ui,sans-serif">data</text>
+
+        <!-- Output Device (clickable) -->
+        <g class="vn-component" data-component="output-device"
+           tabindex="0" role="button" aria-label="Output Device">
+          <rect x="605" y="148" width="135" height="80" rx="8"
+                fill="#F5F5F5" stroke="#546E7A" stroke-width="2"/>
+          <text x="672" y="185" text-anchor="middle" font-size="13" font-weight="bold"
+                fill="#263238" font-family="'Segoe UI',system-ui,sans-serif">Output</text>
+          <text x="672" y="204" text-anchor="middle" font-size="13"
+                fill="#546E7A" font-family="'Segoe UI',system-ui,sans-serif">Device</text>
+        </g>
+
+        <!-- CPU to Output arrow -->
+        <line x1="565" y1="188" x2="603" y2="188" stroke="#0288D1" stroke-width="2.5"
+              marker-end="url(#arr-blue)"/>
+        <text x="584" y="183" text-anchor="middle" font-size="9" fill="#0288D1"
+              font-family="'Segoe UI',system-ui,sans-serif">data</text>
+
+        <!-- Memory Unit (clickable) -->
+        <g class="vn-component" data-component="memory-unit"
+           tabindex="0" role="button" aria-label="Memory Unit">
+          <rect x="270" y="305" width="220" height="68" rx="8"
+                fill="#E8F5E9" stroke="#43A047" stroke-width="2"/>
+          <text x="380" y="335" text-anchor="middle" font-size="14" font-weight="bold"
+                fill="#1B5E20" font-family="'Segoe UI',system-ui,sans-serif">Memory</text>
+          <text x="380" y="355" text-anchor="middle" font-size="12"
+                fill="#2E7D32" font-family="'Segoe UI',system-ui,sans-serif">Unit (RAM)</text>
+        </g>
+
+        <!-- CPU to Memory (down) and Memory to CPU (up) arrows -->
+        <line x1="368" y1="303" x2="368" y2="277" stroke="#0288D1" stroke-width="2.5"
+              marker-end="url(#arr-blue-up)"/>
+        <line x1="392" y1="277" x2="392" y2="303" stroke="#0288D1" stroke-width="2.5"
+              marker-end="url(#arr-blue-dn)"/>
+        <text x="408" y="293" font-size="9" fill="#0288D1"
+              font-family="'Segoe UI',system-ui,sans-serif">address/data</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- CPU BLOCK LAYOUT -->
+  <section id="cpu-block-section" class="content-section">
+    <h2>CPU Block Layout</h2>
+    <p class="section-desc">Modern processor die layout based on our physical cardboard model.
+      <strong>Click any block</strong> to learn more.</p>
+    <div class="cpu-die">
+      <!-- Row 1: 4 Cores in yellow -->
+      <div class="die-row cores-row">
+        <div class="die-block core-block clickable" data-component="cpu-core"
+             tabindex="0" role="button" aria-label="Core 1">
+          <span class="die-label">Core 1</span>
+          <span class="die-sub">P-Core</span>
         </div>
-        <div class="zoom-value" id="zoom-value">1×</div>
-        <div class="zoom-level-name" id="zoom-level-name">Chip Package</div>
+        <div class="die-block core-block clickable" data-component="cpu-core"
+             tabindex="0" role="button" aria-label="Core 2">
+          <span class="die-label">Core 2</span>
+          <span class="die-sub">P-Core</span>
+        </div>
+        <div class="die-block core-block clickable" data-component="cpu-core"
+             tabindex="0" role="button" aria-label="Core 3">
+          <span class="die-label">Core 3</span>
+          <span class="die-sub">E-Core</span>
+        </div>
+        <div class="die-block core-block clickable" data-component="cpu-core"
+             tabindex="0" role="button" aria-label="Core 4">
+          <span class="die-label">Core 4</span>
+          <span class="die-sub">E-Core</span>
+        </div>
       </div>
-      <!-- Layer legend -->
-      <div id="layer-legend">
-        <div class="legend-item" data-layer="package"><span class="dot" style="background:#607D8B"></span> Package</div>
-        <div class="legend-item" data-layer="die"><span class="dot" style="background:#78909C"></span> Die</div>
-        <div class="legend-item" data-layer="cores"><span class="dot" style="background:#0288D1"></span> Cores</div>
-        <div class="legend-item" data-layer="transistors"><span class="dot" style="background:#00C853"></span> Transistors</div>
+      <!-- Row 2: Shared L3 Cache -->
+      <div class="die-row">
+        <div class="die-block l3-block clickable" data-component="l3-cache"
+             tabindex="0" role="button" aria-label="Shared L3 Cache">
+          <span class="die-label">Shared L3 Cache</span>
+          <span class="die-sub">32 MB</span>
+        </div>
+      </div>
+      <!-- Row 3: Processor Graphics + System Agent -->
+      <div class="die-row mid-row">
+        <div class="die-block gpu-block clickable" data-component="processor-graphics"
+             tabindex="0" role="button" aria-label="Processor Graphics">
+          <span class="die-label">Processor</span>
+          <span class="die-label">Graphics</span>
+          <span class="die-sub">Integrated GPU</span>
+        </div>
+        <div class="die-block agent-block clickable" data-component="system-agent"
+             tabindex="0" role="button" aria-label="System Agent and Memory Controller">
+          <span class="die-label">System Agent</span>
+          <span class="die-sub">+ Memory Controller</span>
+          <span class="die-sub">Ring Bus / PCIe</span>
+        </div>
+      </div>
+      <!-- Row 4: Memory Controller I/O -->
+      <div class="die-row">
+        <div class="die-block io-block clickable" data-component="memory-io"
+             tabindex="0" role="button" aria-label="Memory Controller I/O">
+          <span class="die-label">Memory Controller I/O</span>
+          <span class="die-sub">DDR5 Interface</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ====== TRANSISTOR MODELS ====== -->
+  <!-- TRANSISTOR DIAGRAMS -->
   <section id="transistor-section" class="content-section">
-    <h2>Transistor Models</h2>
-    <p class="section-desc">Explore 3D models of the two dominant transistor architectures in modern CPUs.</p>
+    <h2>Transistor Diagrams</h2>
+    <p class="section-desc">Accurate labelled 2D technical diagrams of the two dominant transistor types.
+      <strong>Click any labelled part</strong> to learn more.</p>
     <div class="transistor-grid">
+
+      <!-- MOSFET -->
       <div class="transistor-card">
         <h3>MOSFET</h3>
-        <p>Metal-Oxide-Semiconductor Field-Effect Transistor — the classic planar design used for decades.</p>
-        <div class="viewer-wrapper small-viewer">
-          <canvas id="mosfet-canvas"></canvas>
+        <p class="card-desc">Metal-Oxide-Semiconductor Field-Effect Transistor &#8212; classic planar design.</p>
+        <div class="svg-diagram-wrapper">
+          <svg class="transistor-svg" viewBox="0 0 320 258"
+               xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mosfet-svg-title">
+            <title id="mosfet-svg-title">MOSFET Cross-Section Diagram</title>
+            <!-- p-type substrate/body -->
+            <g class="t-component" data-component="mosfet-body" tabindex="0" role="button" aria-label="p-type Body">
+              <rect x="10" y="158" width="300" height="82" rx="4"
+                    fill="#BBDEFB" stroke="#64B5F6" stroke-width="1.2"/>
+              <text x="160" y="202" text-anchor="middle" font-size="11" fill="#1565C0"
+                    font-family="'Segoe UI',system-ui,sans-serif">p-type Body (Substrate)</text>
+            </g>
+            <!-- Channel region -->
+            <g class="t-component" data-component="mosfet-channel" tabindex="0" role="button" aria-label="Channel">
+              <rect x="90" y="100" width="140" height="58" rx="3"
+                    fill="#C8E6C9" stroke="#66BB6A" stroke-width="1.2" stroke-dasharray="4,2"/>
+              <text x="160" y="134" text-anchor="middle" font-size="11" fill="#2E7D32"
+                    font-family="'Segoe UI',system-ui,sans-serif">Channel</text>
+            </g>
+            <!-- Source n+ -->
+            <g class="t-component" data-component="mosfet-source" tabindex="0" role="button" aria-label="Source">
+              <rect x="10" y="100" width="80" height="58" rx="3"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="50" y="132" text-anchor="middle" font-size="11" fill="#BF360C"
+                    font-family="'Segoe UI',system-ui,sans-serif">n+</text>
+            </g>
+            <!-- Drain n+ -->
+            <g class="t-component" data-component="mosfet-drain" tabindex="0" role="button" aria-label="Drain">
+              <rect x="230" y="100" width="80" height="58" rx="3"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="270" y="132" text-anchor="middle" font-size="11" fill="#BF360C"
+                    font-family="'Segoe UI',system-ui,sans-serif">n+</text>
+            </g>
+            <!-- Gate oxide -->
+            <g class="t-component" data-component="mosfet-oxide" tabindex="0" role="button" aria-label="Gate Oxide">
+              <rect x="90" y="83" width="140" height="17" rx="2"
+                    fill="#E1BEE7" stroke="#AB47BC" stroke-width="1.2"/>
+              <text x="160" y="95" text-anchor="middle" font-size="9" fill="#6A1B9A"
+                    font-family="'Segoe UI',system-ui,sans-serif">SiO2 (Gate Oxide)</text>
+            </g>
+            <!-- Gate metal -->
+            <g class="t-component" data-component="mosfet-gate" tabindex="0" role="button" aria-label="Gate">
+              <rect x="85" y="56" width="150" height="27" rx="3"
+                    fill="#546E7A" stroke="#263238" stroke-width="1.2"/>
+              <text x="160" y="75" text-anchor="middle" font-size="12" font-weight="bold"
+                    fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Gate</text>
+            </g>
+            <!-- Source metal contact -->
+            <rect x="15" y="56" width="70" height="27" rx="3" fill="#90A4AE" stroke="#546E7A" stroke-width="1"/>
+            <text x="50" y="75" text-anchor="middle" font-size="9" fill="#fff"
+                  font-family="'Segoe UI',system-ui,sans-serif">Contact</text>
+            <!-- Drain metal contact -->
+            <rect x="235" y="56" width="70" height="27" rx="3" fill="#90A4AE" stroke="#546E7A" stroke-width="1"/>
+            <text x="270" y="75" text-anchor="middle" font-size="9" fill="#fff"
+                  font-family="'Segoe UI',system-ui,sans-serif">Contact</text>
+            <!-- Top labels -->
+            <text x="50"  y="20" text-anchor="middle" font-size="13" font-weight="bold"
+                  fill="#263238" font-family="'Segoe UI',system-ui,sans-serif">Source</text>
+            <text x="160" y="20" text-anchor="middle" font-size="13" font-weight="bold"
+                  fill="#263238" font-family="'Segoe UI',system-ui,sans-serif">Gate</text>
+            <text x="270" y="20" text-anchor="middle" font-size="13" font-weight="bold"
+                  fill="#263238" font-family="'Segoe UI',system-ui,sans-serif">Drain</text>
+            <!-- Leader lines -->
+            <line x1="50"  y1="23" x2="50"  y2="54" stroke="#B0BEC5" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="160" y1="23" x2="160" y2="54" stroke="#B0BEC5" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="270" y1="23" x2="270" y2="54" stroke="#B0BEC5" stroke-width="1" stroke-dasharray="3,2"/>
+          </svg>
         </div>
-        <div class="transistor-labels" id="mosfet-labels"></div>
       </div>
+
+      <!-- FinFET -->
       <div class="transistor-card">
         <h3>FinFET</h3>
-        <p>Fin Field-Effect Transistor — a 3D tri-gate design that reduces leakage and improves performance.</p>
-        <div class="viewer-wrapper small-viewer">
-          <canvas id="finfet-canvas"></canvas>
+        <p class="card-desc">Fin Field-Effect Transistor &#8212; 3D tri-gate wraps the gate around a silicon fin on three sides.</p>
+        <div class="svg-diagram-wrapper">
+          <svg class="transistor-svg" viewBox="0 0 320 282"
+               xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="finfet-svg-title">
+            <title id="finfet-svg-title">FinFET Cross-Section Diagram</title>
+            <!-- p-type substrate -->
+            <g class="t-component" data-component="finfet-substrate" tabindex="0" role="button" aria-label="Substrate">
+              <rect x="20" y="208" width="280" height="58" rx="4"
+                    fill="#BBDEFB" stroke="#64B5F6" stroke-width="1.2"/>
+              <text x="160" y="243" text-anchor="middle" font-size="11" fill="#1565C0"
+                    font-family="'Segoe UI',system-ui,sans-serif">p-type Substrate</text>
+            </g>
+            <!-- STI left and right of fin -->
+            <rect x="20"  y="168" width="105" height="40" fill="#CFD8DC" stroke="#90A4AE" stroke-width="1"/>
+            <rect x="195" y="168" width="105" height="40" fill="#CFD8DC" stroke="#90A4AE" stroke-width="1"/>
+            <text x="72"  y="193" text-anchor="middle" font-size="9" fill="#455A64"
+                  font-family="'Segoe UI',system-ui,sans-serif">STI</text>
+            <text x="248" y="193" text-anchor="middle" font-size="9" fill="#455A64"
+                  font-family="'Segoe UI',system-ui,sans-serif">STI</text>
+            <!-- Silicon Fin -->
+            <g class="t-component" data-component="finfet-fin" tabindex="0" role="button" aria-label="Silicon Fin">
+              <rect x="125" y="75" width="70" height="133" rx="2"
+                    fill="#FFB74D" stroke="#F57C00" stroke-width="1.5"/>
+              <text x="160" y="148" text-anchor="middle" font-size="11" font-weight="bold"
+                    fill="#E65100" font-family="'Segoe UI',system-ui,sans-serif">Fin (Si)</text>
+              <text x="160" y="163" text-anchor="middle" font-size="10"
+                    fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">(Channel)</text>
+            </g>
+            <!-- Gate oxide: left, right, and top of fin -->
+            <g class="t-component" data-component="finfet-oxide" tabindex="0" role="button" aria-label="Gate Oxide">
+              <rect x="112" y="75"  width="13" height="93" fill="#E1BEE7" stroke="#AB47BC" stroke-width="1"/>
+              <rect x="195" y="75"  width="13" height="93" fill="#E1BEE7" stroke="#AB47BC" stroke-width="1"/>
+              <rect x="125" y="62"  width="70" height="13" fill="#E1BEE7" stroke="#AB47BC" stroke-width="1"/>
+            </g>
+            <!-- Gate metal: top cap + left leg + right leg -->
+            <g class="t-component" data-component="finfet-gate" tabindex="0" role="button" aria-label="Gate">
+              <rect x="82"  y="24"  width="156" height="38" rx="3"
+                    fill="#546E7A" stroke="#263238" stroke-width="1.5"/>
+              <text x="160" y="48" text-anchor="middle" font-size="12" font-weight="bold"
+                    fill="#fff" font-family="'Segoe UI',system-ui,sans-serif">Gate (Metal)</text>
+              <rect x="82"  y="62"  width="30" height="106" fill="#546E7A" stroke="#263238" stroke-width="1.2"/>
+              <rect x="208" y="62"  width="30" height="106" fill="#546E7A" stroke="#263238" stroke-width="1.2"/>
+            </g>
+            <!-- Source label -->
+            <g class="t-component" data-component="finfet-source" tabindex="0" role="button" aria-label="Source">
+              <rect x="20" y="24" width="54" height="26" rx="4"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="47" y="41" text-anchor="middle" font-size="11" font-weight="bold"
+                    fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">Source</text>
+            </g>
+            <!-- Drain label -->
+            <g class="t-component" data-component="finfet-drain" tabindex="0" role="button" aria-label="Drain">
+              <rect x="246" y="24" width="54" height="26" rx="4"
+                    fill="#FFCCBC" stroke="#FF7043" stroke-width="1.2"/>
+              <text x="273" y="41" text-anchor="middle" font-size="11" font-weight="bold"
+                    fill="#BF360C" font-family="'Segoe UI',system-ui,sans-serif">Drain</text>
+            </g>
+            <!-- Dashed lines indicating fin axis direction -->
+            <line x1="74"  y1="37" x2="111" y2="37" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="209" y1="37" x2="246" y2="37" stroke="#FF7043" stroke-width="1" stroke-dasharray="3,2"/>
+            <!-- Gate oxide side label -->
+            <text x="8"  y="115" text-anchor="middle" font-size="9" fill="#6A1B9A"
+                  font-family="'Segoe UI',system-ui,sans-serif">Gate</text>
+            <text x="8"  y="126" text-anchor="middle" font-size="9" fill="#6A1B9A"
+                  font-family="'Segoe UI',system-ui,sans-serif">Oxide</text>
+            <line x1="18" y1="118" x2="111" y2="118" stroke="#AB47BC" stroke-width="1" stroke-dasharray="3,2"/>
+            <!-- Note about source/drain direction -->
+            <text x="160" y="272" text-anchor="middle" font-size="9" fill="#546E7A"
+                  font-family="'Segoe UI',system-ui,sans-serif">Source and Drain run along fin axis (into / out of page)</text>
+          </svg>
         </div>
-        <div class="transistor-labels" id="finfet-labels"></div>
       </div>
+
     </div>
   </section>
 
-  <!-- ====== LOGIC GATE ARITHMETIC ====== -->
+  <!-- LOGIC GATE ARITHMETIC -->
   <section id="logic-section" class="content-section">
     <h2>Logic Gates &amp; Arithmetic</h2>
     <p class="section-desc">See how CPUs perform calculations using logic gates. Enter decimal numbers and watch data flow through the circuit.</p>
-
     <div class="logic-controls">
       <div class="input-group">
         <label for="inputA">Number A</label>
@@ -96,7 +383,7 @@
         <label for="operation">Operation</label>
         <select id="operation">
           <option value="add">Addition (+)</option>
-          <option value="sub">Subtraction (−)</option>
+          <option value="sub">Subtraction (-)</option>
           <option value="and">Bitwise AND (&amp;)</option>
           <option value="or">Bitwise OR (|)</option>
           <option value="xor">Bitwise XOR (^)</option>
@@ -108,160 +395,207 @@
       </div>
       <button id="calculate-btn" class="btn-primary">Calculate</button>
     </div>
-
     <div class="speed-control">
       <label for="speed-slider">Animation Speed</label>
       <input type="range" id="speed-slider" min="1" max="10" value="5">
       <span id="speed-label">5</span>
     </div>
-
     <div class="viewer-wrapper logic-viewer">
       <canvas id="logic-canvas"></canvas>
       <div id="result-display">
-        <span id="result-text">Result: —</span>
+        <span id="result-text">Result: &#8212;</span>
         <div id="binary-display">
-          <div class="binary-row"><span class="bin-label">A:</span> <span id="binA">00000000</span></div>
-          <div class="binary-row"><span class="bin-label">B:</span> <span id="binB">00000000</span></div>
+          <div class="binary-row"><span class="bin-label">A:</span>   <span id="binA">00000000</span></div>
+          <div class="binary-row"><span class="bin-label">B:</span>   <span id="binB">00000000</span></div>
           <div class="binary-row"><span class="bin-label">Out:</span> <span id="binOut">00000000</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ====== EDUCATIONAL NOTES ====== -->
+  <!-- EDUCATIONAL NOTES -->
   <section id="notes-section" class="content-section">
-    <h2>CPU Architecture — Educational Notes</h2>
-    <p class="section-desc">Comprehensive reference covering every major component of a modern processor, from chip-level architecture down to individual transistors.</p>
+    <h2>CPU Architecture &#8212; Educational Notes</h2>
+    <p class="section-desc">Expand any topic below for detailed explanations and real-world examples.</p>
+    <div class="notes-accordion">
 
-    <div class="notes-grid">
-
-      <div class="note-card">
-        <h3>🖥️ CPU (Central Processing Unit)</h3>
-        <p>The CPU is the "brain" of a computer. It fetches instructions from memory, decodes them, and executes them in sequence. Modern CPUs contain billions of transistors fabricated on a silicon die, packaged inside a chip that connects to the motherboard. The CPU coordinates all operations — arithmetic, logic, data movement, and control — by cycling through <strong>Fetch → Decode → Execute → Write-back</strong> stages millions (or billions) of times per second.</p>
-        <p><strong>Key metrics:</strong> Clock speed (GHz), instruction per cycle (IPC), core count, cache size, process node (e.g. 5 nm).</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>CPU (Central Processing Unit)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The CPU is the "brain" of a computer. It cycles through <strong>Fetch &#8594; Decode &#8594; Execute &#8594; Write-back</strong> billions of times per second. Modern CPUs contain billions of transistors on a silicon die.</p>
+          <p><strong>Key metrics:</strong> Clock speed (GHz), instructions per cycle (IPC), core count, cache size, process node.</p>
+          <p><strong>Example:</strong> Intel Core Ultra 9 285K &#8212; 24 cores, 5.7 GHz boost, 36 MB L3 cache.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>🧩 Cores</h3>
-        <p>A <strong>core</strong> is an independent processing unit within the CPU. Each core can fetch, decode, and execute its own stream of instructions. Multi-core CPUs (2, 4, 8, 16, or more cores) allow true parallelism — running multiple threads simultaneously. Modern designs use <strong>heterogeneous cores</strong>: high-performance cores (P-cores) for heavy workloads and efficiency cores (E-cores) for background tasks, optimising both speed and power consumption.</p>
-        <p><strong>Example:</strong> An 8-core CPU can run 8 independent instruction streams in parallel.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Cores</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>A <strong>core</strong> is an independent processing unit. Multi-core CPUs allow true parallelism. Modern designs use heterogeneous cores: P-cores for performance and E-cores for efficiency.</p>
+          <p><strong>Example:</strong> AMD Ryzen 9 7950X &#8212; 16 cores, 32 threads.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>🎛️ Control Unit (CU)</h3>
-        <p>The <strong>Control Unit</strong> is the "conductor" of the CPU. It reads instructions from memory, decodes the opcode to determine what operation to perform, and generates control signals that orchestrate the ALU, registers, and data buses. It manages the <strong>instruction pipeline</strong>, handles branch prediction, and coordinates with the clock to ensure every component acts at the right time. Without the CU, the CPU would not know which operation to perform next.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Control Unit (CU)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>Control Unit</strong> decodes instruction opcodes and generates control signals that orchestrate the ALU, registers, and data buses. It handles branch prediction and manages the instruction pipeline.</p>
+          <p><strong>Example:</strong> Intel's Branch Prediction Unit predicts code paths ~99% correctly, eliminating pipeline stalls.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>➕ ALU (Arithmetic Logic Unit)</h3>
-        <p>The <strong>ALU</strong> performs all mathematical and logical operations: addition, subtraction, multiplication, division, bitwise AND, OR, XOR, NOT, and comparison. It takes two input operands and produces a result plus status flags (zero, carry, overflow, sign). The ALU is built from combinational logic gates — a full adder chain for arithmetic, and dedicated gates for each logical operation. Modern CPUs have multiple ALUs per core for superscalar execution.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>ALU (Arithmetic Logic Unit)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>ALU</strong> performs all arithmetic (+, -, x, /) and logical (AND, OR, XOR) operations. Built from combinational logic gates &#8212; a full-adder chain for arithmetic and dedicated gates for each logical operation.</p>
+          <p><strong>Example:</strong> A modern superscalar core has 4+ integer ALUs running in parallel per cycle.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>📋 Registers</h3>
-        <p><strong>Registers</strong> are the fastest storage in the CPU — tiny memory cells built directly into the core. They hold the data the ALU is currently working on, instruction pointers, stack pointers, and status flags. Types include: <strong>General-purpose registers</strong> (e.g. RAX, RBX on x86), <strong>Program Counter (PC)</strong> — address of next instruction, <strong>Stack Pointer (SP)</strong>, <strong>Flags/Status register</strong>, and <strong>Floating-Point registers</strong> (for decimal math). Register access takes just 1 clock cycle — far faster than cache or RAM.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Registers</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p><strong>Registers</strong> are the fastest storage in the CPU &#8212; tiny cells built directly into the core. Types: General-purpose (RAX, RBX), Program Counter (PC), Stack Pointer (SP), and Floating-Point. Access takes just 1 clock cycle.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>💾 Cache</h3>
-        <p><strong>Cache</strong> is high-speed SRAM memory sitting between registers and main RAM, designed to reduce the latency of memory access. It operates in a hierarchy:</p>
-        <ul>
-          <li><strong>L1 Cache</strong> — Smallest (32–128 KB per core), fastest (~1 ns). Split into instruction cache (L1i) and data cache (L1d).</li>
-          <li><strong>L2 Cache</strong> — Medium (256 KB – 1 MB per core), slightly slower (~3–5 ns).</li>
-          <li><strong>L3 Cache</strong> — Largest (8–64 MB shared), slowest cache level (~10–20 ns). Shared among all cores.</li>
-        </ul>
-        <p>Cache uses spatial and temporal locality to predict which data will be needed next.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Cache Hierarchy (L1 / L2 / L3)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p><strong>Cache</strong> is high-speed SRAM reducing memory latency:</p>
+          <ul>
+            <li><strong>L1</strong> &#8212; 32&#8211;128 KB per core, ~1 ns (split L1i / L1d).</li>
+            <li><strong>L2</strong> &#8212; 256 KB&#8211;1 MB per core, ~3&#8211;5 ns.</li>
+            <li><strong>L3</strong> &#8212; 8&#8211;64 MB shared, ~10&#8211;20 ns.</li>
+          </ul>
+          <p>Cache uses temporal and spatial locality to pre-load data before the CPU needs it.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>🚌 Buses</h3>
-        <p><strong>Buses</strong> are the communication highways inside the CPU and between the CPU and other components. Three main types:</p>
-        <ul>
-          <li><strong>Data Bus</strong> — Carries actual data between CPU, memory, and I/O (width = 64 bits on modern CPUs).</li>
-          <li><strong>Address Bus</strong> — Carries memory addresses, determining where data is read from or written to.</li>
-          <li><strong>Control Bus</strong> — Carries control signals (read/write, interrupt, clock) to coordinate operations.</li>
-        </ul>
-        <p>Inside the chip, a <strong>ring bus</strong> or <strong>mesh interconnect</strong> connects cores to L3 cache and memory controllers at very high bandwidth.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Buses &amp; Interconnects</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p><strong>Buses</strong> carry data between CPU components:</p>
+          <ul>
+            <li><strong>Data Bus</strong> &#8212; 64-bit data path.</li>
+            <li><strong>Address Bus</strong> &#8212; Memory addresses.</li>
+            <li><strong>Control Bus</strong> &#8212; Read/write signals.</li>
+          </ul>
+          <p>A <strong>ring bus</strong> or <strong>mesh interconnect</strong> connects cores to L3 and memory at over 1 TB/s internally.</p>
+        </div>
       </div>
 
-      <div class="note-card">
-        <h3>⏱️ Clock</h3>
-        <p>The <strong>clock</strong> generates a periodic square-wave signal that synchronises every operation inside the CPU. Each "tick" (rising edge) triggers the next step in the pipeline. Clock speed is measured in <strong>GHz</strong> (billions of cycles per second). A 5 GHz clock means 5 billion ticks per second, with each cycle lasting just 0.2 nanoseconds. <strong>Turbo boost</strong> dynamically increases clock speed for short bursts; <strong>clock gating</strong> disables the clock to idle circuits, saving power.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>Clock &amp; Pipeline</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>clock</strong> synchronises all CPU operations. At 5 GHz, each cycle is 0.2 ns. The <strong>instruction pipeline</strong> (Fetch &#8594; Decode &#8594; Execute &#8594; Write-back) overlaps multiple instructions like an assembly line. Modern CPUs have 14&#8211;19 pipeline stages.</p>
+        </div>
       </div>
 
-      <div class="note-card note-card-wide">
-        <h3>🔬 MOSFET (Metal-Oxide-Semiconductor Field-Effect Transistor)</h3>
-        <p>The <strong>MOSFET</strong> is the fundamental building block of all modern digital circuits. It acts as a voltage-controlled switch: applying a voltage to the <strong>gate</strong> creates an electric field across the <strong>oxide</strong> insulator, which attracts charge carriers to form a conductive <strong>channel</strong> between the <strong>source</strong> and <strong>drain</strong>.</p>
-        <h4>Types of MOSFETs</h4>
-        <ul>
-          <li><strong>NMOS (n-channel)</strong> — Channel formed by electrons. Turns ON when gate voltage is HIGH. Faster switching, used for pull-down networks.</li>
-          <li><strong>PMOS (p-channel)</strong> — Channel formed by holes. Turns ON when gate voltage is LOW. Used for pull-up networks.</li>
-          <li><strong>CMOS (Complementary MOS)</strong> — Pairs of NMOS + PMOS transistors working together. Nearly zero static power consumption. This is the technology used in virtually all modern CPUs.</li>
-        </ul>
-        <p><strong>Key parameters:</strong> Threshold voltage (Vt), gate length (determines process node), on/off current ratio, gate capacitance.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>MOSFET (Metal-Oxide-Semiconductor Field-Effect Transistor)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>The <strong>MOSFET</strong> acts as a voltage-controlled switch. Applying a voltage to the <strong>gate</strong> forms a conductive <strong>channel</strong> between <strong>source</strong> and <strong>drain</strong> through the <strong>oxide</strong> layer.</p>
+          <ul>
+            <li><strong>NMOS</strong> &#8212; Turns ON at HIGH gate voltage.</li>
+            <li><strong>PMOS</strong> &#8212; Turns ON at LOW gate voltage.</li>
+            <li><strong>CMOS</strong> &#8212; Complementary NMOS + PMOS. Used in all modern CPUs (near-zero static power).</li>
+          </ul>
+        </div>
       </div>
 
-      <div class="note-card note-card-wide">
-        <h3>🏗️ FinFET (Fin Field-Effect Transistor)</h3>
-        <p>As transistors shrank below ~22 nm, traditional planar MOSFETs suffered from severe <strong>short-channel effects</strong> — the gate could no longer control the channel, causing leakage current. The <strong>FinFET</strong> solves this by raising the channel vertically as a thin "fin" of silicon, and wrapping the gate around it on three sides (tri-gate). This dramatically improves electrostatic control.</p>
-        <h4>Types & Variants</h4>
-        <ul>
-          <li><strong>Bulk FinFET</strong> — Fins are etched from the bulk silicon substrate. Used by Intel (from 22 nm) and TSMC/Samsung (from 16/14 nm).</li>
-          <li><strong>SOI FinFET</strong> — Fins built on a Silicon-on-Insulator wafer, reducing parasitic capacitance and leakage further.</li>
-          <li><strong>GAA FET (Gate-All-Around)</strong> — The next evolution: the channel is a horizontal nanosheet or nanowire fully surrounded by the gate on all four sides. Used at 3 nm and below (Samsung, TSMC).</li>
-        </ul>
-        <p><strong>Advantages over planar MOSFET:</strong> Better leakage control, higher drive current, lower operating voltage, improved performance-per-watt. FinFETs enabled the continuation of Moore's Law below 22 nm.</p>
+      <div class="note-item">
+        <button class="note-header" aria-expanded="false">
+          <span>FinFET (Fin Field-Effect Transistor)</span>
+          <span class="note-toggle" aria-hidden="true">+</span>
+        </button>
+        <div class="note-body" hidden>
+          <p>At sub-22 nm, planar MOSFETs leaked current (short-channel effects). The <strong>FinFET</strong> raises the silicon channel as a thin <strong>fin</strong> and wraps the gate on three sides (tri-gate), giving far better electrostatic control.</p>
+          <ul>
+            <li><strong>Bulk FinFET</strong> &#8212; Intel 22 nm+ (2011), TSMC/Samsung 16/14 nm+.</li>
+            <li><strong>GAA FET</strong> &#8212; Gate-All-Around nanosheets (3 nm and below).</li>
+          </ul>
+          <p><strong>Example:</strong> Intel's 22 nm Ivy Bridge FinFET cut leakage by 50% vs. 32 nm planar.</p>
+        </div>
       </div>
 
     </div>
   </section>
 
-  <!-- ====== ABOUT ====== -->
+  <!-- ABOUT -->
   <section id="about-section" class="content-section">
     <h2>About This Exhibition</h2>
     <div class="about-content">
       <div class="about-card">
-        <h3>🔬 What You'll Learn</h3>
-        <p>This interactive exhibition takes you on a journey from the visible chip package all the way down to the nanoscale transistors that make computation possible. You'll see how logic gates combine to perform arithmetic and how data flows through a CPU.</p>
+        <h3>What You'll Learn</h3>
+        <p>This interactive exhibition walks you through the Von Neumann architecture, the physical layout of a modern CPU die, and the nanoscale transistors &#8212; matching our physical exhibition model.</p>
       </div>
       <div class="about-card">
-        <h3>🎮 How to Interact</h3>
+        <h3>How to Interact</h3>
         <ul>
-          <li><strong>Rotate:</strong> Click &amp; drag (or touch &amp; drag)</li>
-          <li><strong>Zoom:</strong> Scroll wheel (or pinch)</li>
-          <li><strong>Pan:</strong> Right-click &amp; drag (or two-finger drag)</li>
+          <li><strong>Click</strong> any diagram component to open a popup with full explanation.</li>
+          <li><strong>Expand</strong> notes topics with the + button.</li>
+          <li><strong>Calculate</strong> logic operations to see data flowing through gates.</li>
         </ul>
       </div>
       <div class="about-card">
-        <h3>📐 Technology</h3>
-        <p>Built with Three.js for 3D rendering, vanilla JavaScript for logic simulation, and CSS for the white-themed exhibition aesthetic.</p>
+        <h3>Technology</h3>
+        <p>Pure HTML, CSS, and modular vanilla JavaScript. SVG diagrams for technical accuracy. No backend &#8212; exhibition-ready.</p>
       </div>
     </div>
   </section>
 
-  <!-- ====== FOOTER ====== -->
+  <!-- FOOTER -->
   <footer id="site-footer">
     <div class="footer-inner">
       <div class="footer-col">
         <h4>CPU Explorer</h4>
-        <p>An interactive 3D exhibition explaining how modern processors work — from chip to transistor.</p>
+        <p>An interactive exhibition explaining how modern processors work &#8212; from Von Neumann architecture to individual transistors.</p>
       </div>
       <div class="footer-col">
         <h4>Sections</h4>
         <ul>
-          <li><a href="#cpu-section">CPU Layers</a></li>
+          <li><a href="#arch-section">Architecture</a></li>
+          <li><a href="#cpu-block-section">CPU Layout</a></li>
           <li><a href="#transistor-section">Transistors</a></li>
           <li><a href="#logic-section">Logic &amp; Arithmetic</a></li>
           <li><a href="#notes-section">Notes</a></li>
-          <li><a href="#about-section">About</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4>Resources</h4>
         <ul>
-          <li><a href="https://en.wikipedia.org/wiki/Central_processing_unit" target="_blank" rel="noopener noreferrer">CPU — Wikipedia</a></li>
-          <li><a href="https://en.wikipedia.org/wiki/MOSFET" target="_blank" rel="noopener noreferrer">MOSFET — Wikipedia</a></li>
-          <li><a href="https://en.wikipedia.org/wiki/FinFET" target="_blank" rel="noopener noreferrer">FinFET — Wikipedia</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Central_processing_unit" target="_blank" rel="noopener noreferrer">CPU &#8212; Wikipedia</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Von_Neumann_architecture" target="_blank" rel="noopener noreferrer">Von Neumann Architecture</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/MOSFET" target="_blank" rel="noopener noreferrer">MOSFET &#8212; Wikipedia</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/FinFET" target="_blank" rel="noopener noreferrer">FinFET &#8212; Wikipedia</a></li>
         </ul>
       </div>
     </div>
@@ -270,9 +604,19 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
-  <script src="js/cpu-explorer.js"></script>
-  <script src="js/transistor-viewer.js"></script>
+  <!-- MODAL POPUP -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="modal-title" hidden>
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close popup">&#10005;</button>
+      <div class="modal-icon" id="modal-icon" aria-hidden="true"></div>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Scripts (no Three.js) -->
+  <script src="js/exhibition.js"></script>
   <script src="js/logic-simulator.js"></script>
   <script src="js/app.js"></script>
 </body>
